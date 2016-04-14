@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application Name="fabric:/DeviceDemoApplication" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <!-- DeviceActorService ApplicationManifest.xml Parameters -->
+    <Parameter Name="DeviceActorService_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="DeviceActorService_MinReplicaSetSize" Value="2" />
+    <Parameter Name="DeviceActorService_PartitionCount" Value="9" />
+    <!-- EventProcessorHostService ApplicationManifest.xml Parameters -->
+    <Parameter Name="EventProcessorHostService_InstanceCount" Value="-1" />
+    <!-- DeviceManagementWebService ApplicationManifest.xml Parameters -->
+    <Parameter Name="DeviceManagementWebService_InstanceCount" Value="-1" />
+    <!-- DeviceActorService Settings.xml Parameters -->
+    <Parameter Name="DeviceActorService_ServiceBusConnectionString" Value="[Output-Event-Hub-Service-Bus-Connection-String]" />
+    <Parameter Name="DeviceActorService_EventHubName" Value="[Output-Event-Hub-Name]" />
+    <Parameter Name="DeviceActorService_QueueLength" Value="100" />
+    <!-- EventProcessorHostService Settings.xml Parameters -->
+    <Parameter Name="EventProcessorHostService_StorageAccountConnectionString" Value="[IoT-Hub-Storage-Account-Connection-String]" />
+    <Parameter Name="EventProcessorHostService_ServiceBusConnectionString" Value="[IoT-Hub-Event-Hub-Compatible-Endpoint]" />
+    <Parameter Name="EventProcessorHostService_EventHubName" Value="[IoT-Hub-Event-Hub-Compatible-Name]" />
+    <Parameter Name="EventProcessorHostService_ConsumerGroupName" Value="[IoT-Hub-Consumer-Group-Name]" />
+  </Parameters>
+</Application>
