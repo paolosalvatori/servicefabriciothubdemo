@@ -10,7 +10,7 @@ This demo demonstrates how to build an IoT application for anomaly detection usi
 The following picture shows the architecture design of the application.
 <br/>
 <br/>
-![alt tag](https://github.com/Azure-Samples/service-fabric-dotnet-iot-with-iot-hub/blob/master/Images/IoTHubArchitecture.png?raw=true)
+![alt tag](https://raw.githubusercontent.com/paolosalvatori/servicefabriciothubdemo/master/Images/IoTHubArchitecture.png)
 <br/>
 
 # Service Fabric Application #
@@ -22,7 +22,7 @@ The Service Fabric application ingest events from the input Event Hub, processes
 - **DeviceActorService**: a stateful device actor is used to process incoming events at the device level. Each actor processes incoming sensor readings and generates an alert whenever the actual value is outside of the tolerance  range identified by the **MinThreshold** and **MaxThreshold** properties. Alerts are sent to an output Event Hub.
 
 # Message Flow #
-1. A client application built using Windows Forms is used to simulate a device management console. When you press the Start button, the client application creates the devices in the IoT Hub identity registry.<br/>br/>![Client](https://github.com/Azure-Samples/service-fabric-dotnet-iot-with-iot-hub/blob/master/Images/DeviceEmulator.png?raw=true)
+1. A client application built using Windows Forms is used to simulate a device management console. When you press the Start button, the client application creates the devices in the IoT Hub identity registry.<br/>br/>![Client](https://raw.githubusercontent.com/paolosalvatori/servicefabriciothubdemo/master/Images/DeviceEmulator.png)
 2. invokes the OWIN-hosted REST service exposed by the **DeviceManagementWebService** stateless service to initialize the device actors with the following metadata:
 	- DeviceId
 	- Name
@@ -42,7 +42,7 @@ The Service Fabric application ingest events from the input Event Hub, processes
 8. An **Alert Client** application built using Windows Forms uses **EventProcessorHost** listener to read alerts from the output Event Hub.
 9. The **Alert Client** displays incoming events in a **DataGridView**.
 
-![alt tag](https://github.com/Azure-Samples/service-fabric-dotnet-iot-with-iot-hub/blob/master/Images/AlertClient.png?raw=true)
+![alt tag](https://raw.githubusercontent.com/paolosalvatori/servicefabriciothubdemo/master/Images/AlertClient.png)
 
 # Application Configuration #
 Make sure to replace the following placeholders in the project files below before deploying and testing the application on the local development Service Fabric cluster or before deploying the application to your Service Fabric cluster on Microsoft Azure.
