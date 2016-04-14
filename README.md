@@ -3,7 +3,7 @@ services: service-fabric, event-hubs, iot-hub
 platforms: dotnet
 author: paolosalvatori
 ---
-# IoT Sample with Service Fabricand IoT Hub #
+# IoT Sample with Service Fabric and IoT Hub #
 This demo demonstrates how to build an IoT application for anomaly detection using Service Fabric, IoT Hubs, Event Hubs, OWIN and ASP.NET Web API.<br/>
 
 # Architecture Design #
