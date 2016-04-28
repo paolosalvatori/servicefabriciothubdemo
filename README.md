@@ -67,10 +67,12 @@ This list contains the placeholders that need to be replaced before deploying an
 
 **App.config** file in the **DeviceEmulator** project:
 
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <configuration>
       <appSettings>
-	    <add key="url" value="http://localhost:8088/devicemanagement;http://[Cluster-Name].[Cluster-Location].cloudapp.azure.com:8088/devicemanagement" />
+	    <add key="url" value="http://localhost:8088/devicemanagement;
+                              http://[Name].[Location].cloudapp.azure.com:8088/devicemanagement" />
 	    <add key="connectionString" value="[IoT-Hub-Connection-String]" />
 	    <add key="deviceCount" value="100" />
 	    <add key="eventInterval" value="2000" />
@@ -82,126 +84,178 @@ This list contains the placeholders that need to be replaced before deploying an
       </appSettings>
       ...
     </configuration>
+```
 
 **App.config** file in the **AlertClient** project:
 
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <configuration>
       <appSettings>
-	    <add key="storageAccountConnectionString" value="[Output-Event-Hub-Storage-Account-Connection-String]" />
-	    <add key="serviceBusConnectionString" value="[Output-Event-Hub-Service-Bus-Connection-String]" />
-        <add key="eventHub" value="[Output-Event-Hub-Name];[Output-Event-Hub-Name];..." />
-		<add key="consumerGroup" value="[Output-Event-Hub-Consumer-Group-Name]"/>
+	    <add key="storageAccountConnectionString" 
+             value="[Output-Event-Hub-Storage-Account-Connection-String]" />
+	    <add key="serviceBusConnectionString" 
+             value="[Output-Event-Hub-Service-Bus-Connection-String]" />
+        <add key="eventHub" 
+             value="[Output-Event-Hub-Name];[Output-Event-Hub-Name];..." />
+		<add key="consumerGroup" 
+             value="[Output-Event-Hub-Consumer-Group-Name]"/>
       </appSettings>
       ...
     </configuration>
-
+```
 **ApplicationParameters\Local.xml** file in the **IoTDemo** project:
 
+```xml
 	<?xml version="1.0" encoding="utf-8"?>
-	<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/DeviceDemoApplication" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+	<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                 Name="fabric:/DeviceDemoApplication" 
+                 xmlns="http://schemas.microsoft.com/2011/01/fabric">
 	   <Parameters>
 	      <Parameter Name="DeviceManagementWebService_InstanceCount" Value="1" />
 	      <Parameter Name="DeviceActorService_PartitionCount" Value="5" />
 	      <Parameter Name="DeviceActorService_TargetReplicaSetSize" Value="3" />
 	      <Parameter Name="DeviceActorService_MinReplicaSetSize" Value="2" />
-	      <Parameter Name="DeviceActorService_ServiceBusConnectionString" Value="[Output-Event-Hub-Service-Bus-Connection-String]" />
+	      <Parameter Name="DeviceActorService_ServiceBusConnectionString" 
+                     Value="[Output-Event-Hub-Service-Bus-Connection-String]" />
 	      <Parameter Name="DeviceActorService_EventHubName" Value="[Output-Event-Hub-Name]" />
 	      <Parameter Name="DeviceActorService_QueueLength" Value="100" />
 	      <Parameter Name="EventProcessorHostService_InstanceCount" Value="-1" />
-	      <Parameter Name="EventProcessorHostService_StorageAccountConnectionString" Value="[IoT-Hub-Storage-Account-Connection-String]" />
-	      <Parameter Name="EventProcessorHostService_ServiceBusConnectionString" Value="[IoT-Hub-Event-Hub-Compatible-Endpoint]" />
-	      <Parameter Name="EventProcessorHostService_EventHubName" Value="[IoT-Hub-Event-Hub-Compatible-Name]" />
-          <Parameter Name="EventProcessorHostService_ConsumerGroupName" Value="[IoT-Hub-Consumer-Group-Name]" />
+	      <Parameter Name="EventProcessorHostService_StorageAccountConnectionString" 
+                     Value="[IoT-Hub-Storage-Account-Connection-String]" />
+	      <Parameter Name="EventProcessorHostService_ServiceBusConnectionString" 
+                     Value="[IoT-Hub-Event-Hub-Compatible-Endpoint]" />
+	      <Parameter Name="EventProcessorHostService_EventHubName" 
+                     Value="[IoT-Hub-Event-Hub-Compatible-Name]" />
+          <Parameter Name="EventProcessorHostService_ConsumerGroupName" 
+                     Value="[IoT-Hub-Consumer-Group-Name]" />
 	   </Parameters>
 	</Application>
+```
 
 **ApplicationParameters\Cloud.xml** file in the **IoTDemo** project:
 
+```xml
 	<?xml version="1.0" encoding="utf-8"?>
-	<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/DeviceDemoApplication" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+	<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                 Name="fabric:/DeviceDemoApplication" 
+                 xmlns="http://schemas.microsoft.com/2011/01/fabric">
 	  <Parameters>
 	    <Parameter Name="DeviceManagementWebService_InstanceCount" Value="-1" />
 	    <Parameter Name="DeviceActorService_PartitionCount" Value="5" />
 	    <Parameter Name="DeviceActorService_TargetReplicaSetSize" Value="3" />
 	    <Parameter Name="DeviceActorService_MinReplicaSetSize" Value="2" />
-	    <Parameter Name="DeviceActorService_ServiceBusConnectionString" Value="[Output-Event-Hub-Service-Bus-Connection-String]" />
+	    <Parameter Name="DeviceActorService_ServiceBusConnectionString" 
+                   Value="[Output-Event-Hub-Service-Bus-Connection-String]" />
 	    <Parameter Name="DeviceActorService_EventHubName" Value="[Output-Event-Hub-Name]" />
 	    <Parameter Name="DeviceActorService_QueueLength" Value="100" />
 	    <Parameter Name="EventProcessorHostService_InstanceCount" Value="-1" />
-	    <Parameter Name="EventProcessorHostService_StorageAccountConnectionString" Value="[IoT-Hub-Storage-Account-Connection-String]" />
-	    <Parameter Name="EventProcessorHostService_ServiceBusConnectionString" Value="[IoT-Hub-Event-Hub-Compatible-Endpoint]" />
-        <Parameter Name="EventProcessorHostService_EventHubName" Value="[IoT-Hub-Event-Hub-Compatible-Name]" />
-	    <Parameter Name="EventProcessorHostService_ConsumerGroupName" Value="[IoT-Hub-Consumer-Group-Name]" />
+	    <Parameter Name="EventProcessorHostService_StorageAccountConnectionString" 
+                   Value="[IoT-Hub-Storage-Account-Connection-String]" />
+	    <Parameter Name="EventProcessorHostService_ServiceBusConnectionString" 
+                   Value="[IoT-Hub-Event-Hub-Compatible-Endpoint]" />
+        <Parameter Name="EventProcessorHostService_EventHubName" 
+                   Value="[IoT-Hub-Event-Hub-Compatible-Name]" />
+	    <Parameter Name="EventProcessorHostService_ConsumerGroupName" 
+                   Value="[IoT-Hub-Consumer-Group-Name]" />
 	  </Parameters>
 	</Application>
+```
 
 **ApplicationManifest.xml** file in the **IoTDemo** project:
 
+```xml
     <?xml version="1.0" encoding="utf-8"?>
-    <ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="DeviceDemoApplicationType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
-       <Parameters>
-      <Parameter Name="DeviceActorService_PartitionCount" DefaultValue="5" />
-      <Parameter Name="DeviceActorService_MinReplicaSetSize" DefaultValue="2" />
-      <Parameter Name="DeviceActorService_TargetReplicaSetSize" DefaultValue="3" />
-      <Parameter Name="DeviceActorService_ServiceBusConnectionString" DefaultValue="" />
-      <Parameter Name="DeviceActorService_EventHubName" DefaultValue="" />
-      <Parameter Name="DeviceActorService_QueueLength" DefaultValue="100" />
-      <Parameter Name="EventProcessorHostService_InstanceCount" DefaultValue="-1" />
-      <Parameter Name="EventProcessorHostService_StorageAccountConnectionString" DefaultValue="" />
-      <Parameter Name="EventProcessorHostService_ServiceBusConnectionString" DefaultValue="" />
-      <Parameter Name="EventProcessorHostService_ConsumerGroupName" DefaultValue="" />
-      <Parameter Name="EventProcessorHostService_EventHubName" DefaultValue="" />
-      <Parameter Name="DeviceManagementWebService_InstanceCount" DefaultValue="-1" />
-       </Parameters>
-       <ServiceManifestImport>
-      <ServiceManifestRef ServiceManifestName="DeviceActorServicePkg" ServiceManifestVersion="1.0.0" />
-      <ConfigOverrides>
-     <ConfigOverride Name="Config">
-    <Settings>
-       <Section Name="DeviceActorServiceConfig">
-      <Parameter Name="ServiceBusConnectionString" Value="[DeviceActorService_ServiceBusConnectionString]" />
-      <Parameter Name="EventHubName" Value="[DeviceActorService_EventHubName]" />
-      <Parameter Name="QueueLength" Value="[DeviceActorService_QueueLength]" />
-       </Section>
-    </Settings>
-     </ConfigOverride>
-      </ConfigOverrides>
-       </ServiceManifestImport>
-       <ServiceManifestImport>
-      <ServiceManifestRef ServiceManifestName="EventProcessorHostServicePkg" ServiceManifestVersion="1.0.0" />
-      <ConfigOverrides>
-     <ConfigOverride Name="Config">
-    <Settings>
-       <Section Name="EventProcessorHostConfig">
-      <Parameter Name="StorageAccountConnectionString" Value="[EventProcessorHostService_StorageAccountConnectionString]" />
-      <Parameter Name="ServiceBusConnectionString" Value="[EventProcessorHostService_ServiceBusConnectionString]" />
-      <Parameter Name="EventHubName" Value="[EventProcessorHostService_EventHubName]" />
-      <Parameter Name="ConsumerGroupName" Value="[EventProcessorHostService_ConsumerGroupName]" />
-       </Section>
-    </Settings>
-     </ConfigOverride>
-      </ConfigOverrides>
-       </ServiceManifestImport>
-       <ServiceManifestImport>
-      <ServiceManifestRef ServiceManifestName="DeviceManagementWebServicePkg" ServiceManifestVersion="1.0.0" />
-      <ConfigOverrides />
-       </ServiceManifestImport>
-       <DefaultServices>
-      <Service Name="DeviceActorService" GeneratedIdRef="de1d8306-f193-45ac-aa15-3efde9ffcb78">
-     <StatefulService ServiceTypeName="DeviceActorServiceType" TargetReplicaSetSize="[DeviceActorService_TargetReplicaSetSize]" MinReplicaSetSize="[DeviceActorService_MinReplicaSetSize]">
-    <UniformInt64Partition PartitionCount="[DeviceActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
-     </StatefulService>
-      </Service>
-      <Service Name="EventProcessorHostService">
-     <StatelessService ServiceTypeName="EventProcessorHostServiceType" InstanceCount="[EventProcessorHostService_InstanceCount]">
-    <SingletonPartition />
-     </StatelessService>
-      </Service>
-      <Service Name="DeviceManagementWebService">
-     <StatelessService ServiceTypeName="DeviceManagementWebServiceType" InstanceCount="[DeviceManagementWebService_InstanceCount]">
-    <SingletonPartition />
-     </StatelessService>
-      </Service>
-       </DefaultServices>
+	<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         ApplicationTypeName="DeviceDemoApplicationType" 
+                         ApplicationTypeVersion="1.0.0" 
+                         xmlns="http://schemas.microsoft.com/2011/01/fabric">
+		<Parameters>
+			<Parameter Name="DeviceActorService_PartitionCount" DefaultValue="5" />
+			<Parameter Name="DeviceActorService_MinReplicaSetSize" DefaultValue="2" />
+			<Parameter Name="DeviceActorService_TargetReplicaSetSize" DefaultValue="3" />
+			<Parameter Name="DeviceActorService_ServiceBusConnectionString" 
+                       DefaultValue="" />
+			<Parameter Name="DeviceActorService_EventHubName" DefaultValue="" />
+			<Parameter Name="DeviceActorService_QueueLength" DefaultValue="100" />
+			<Parameter Name="EventProcessorHostService_InstanceCount" DefaultValue="-1" />
+			<Parameter Name="EventProcessorHostService_StorageAccountConnectionString" 
+                       DefaultValue="" />
+			<Parameter Name="EventProcessorHostService_ServiceBusConnectionString" 
+                       DefaultValue="" />
+			<Parameter Name="EventProcessorHostService_ConsumerGroupName" DefaultValue="" />
+			<Parameter Name="EventProcessorHostService_EventHubName" DefaultValue="" />
+			<Parameter Name="DeviceManagementWebService_InstanceCount" DefaultValue="-1" />
+		</Parameters>
+		<ServiceManifestImport>
+      		<ServiceManifestRef ServiceManifestName="DeviceActorServicePkg" 
+                                ServiceManifestVersion="1.0.0" />
+      		<ConfigOverrides>
+     			<ConfigOverride Name="Config">
+    				<Settings>
+       					<Section Name="DeviceActorServiceConfig">
+							<Parameter Name="ServiceBusConnectionString" 
+                                       Value="[DeviceActorService_ServiceBusConnectionString]" />
+					      	<Parameter Name="EventHubName" 
+                                       Value="[DeviceActorService_EventHubName]" />
+					      	<Parameter Name="QueueLength" 
+                                       Value="[DeviceActorService_QueueLength]" />
+						</Section>
+					</Settings>
+				</ConfigOverride>
+      		</ConfigOverrides>
+		</ServiceManifestImport>
+		<ServiceManifestImport>
+			<ServiceManifestRef ServiceManifestName="EventProcessorHostServicePkg" 
+                                ServiceManifestVersion="1.0.0" />
+  			<ConfigOverrides>
+ 				<ConfigOverride Name="Config">
+					<Settings>
+       					<Section Name="EventProcessorHostConfig">
+      						<Parameter Name="StorageAccountConnectionString" 
+                                       Value="[EventProcessorHostService_StorageAccountConnectionString]" />
+      						<Parameter Name="ServiceBusConnectionString" 
+                                       Value="[EventProcessorHostService_ServiceBusConnectionString]" />
+					      	<Parameter Name="EventHubName" 
+                                       Value="[EventProcessorHostService_EventHubName]" />
+					      	<Parameter Name="ConsumerGroupName" 
+                                       Value="[EventProcessorHostService_ConsumerGroupName]" />
+       					</Section>
+    				</Settings>
+     			</ConfigOverride>
+      		</ConfigOverrides>
+		</ServiceManifestImport>
+		<ServiceManifestImport>
+			<ServiceManifestRef ServiceManifestName="DeviceManagementWebServicePkg" 
+                                ServiceManifestVersion="1.0.0" />
+      		<ConfigOverrides />
+		</ServiceManifestImport>
+		<DefaultServices>
+			<Service Name="DeviceActorService" 
+                     GeneratedIdRef="de1d8306-f193-45ac-aa15-3efde9ffcb78">
+	     		<StatefulService ServiceTypeName="DeviceActorServiceType" 
+	                             TargetReplicaSetSize="[DeviceActorService_TargetReplicaSetSize]" 
+	                             MinReplicaSetSize="[DeviceActorService_MinReplicaSetSize]">
+	    			<UniformInt64Partition PartitionCount="[DeviceActorService_PartitionCount]" 
+	                                       LowKey="-9223372036854775808" 
+	                                       HighKey="9223372036854775807" />
+	     		</StatefulService>
+      		</Service>
+      		<Service Name="EventProcessorHostService">
+     			<StatelessService ServiceTypeName="EventProcessorHostServiceType" 
+                                  InstanceCount="[EventProcessorHostService_InstanceCount]">
+					<SingletonPartition />
+				</StatelessService>
+      		</Service>
+			<Service Name="DeviceManagementWebService">
+				<StatelessService ServiceTypeName="DeviceManagementWebServiceType" 
+                                  InstanceCount="[DeviceManagementWebService_InstanceCount]">
+					<SingletonPartition />
+				</StatelessService>
+			</Service>
+		</DefaultServices>
     </ApplicationManifest>
+```
