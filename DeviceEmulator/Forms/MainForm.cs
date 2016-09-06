@@ -652,8 +652,9 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                             this.deviceList.Add(device);
                         },
                         this.cancellationTokenSource.Token));
-                await Task.WhenAll(taskList);
             }
+            // Wait for the completion of all tasks
+            await Task.WhenAll(taskList); 
             if (!this.cancellationTokenSource.Token.IsCancellationRequested)
             {
                 this.WriteToLog(DeviceActorsInitialized);
