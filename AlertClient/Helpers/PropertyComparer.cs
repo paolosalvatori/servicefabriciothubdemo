@@ -1,34 +1,50 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.AlertClient
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Reflection;
-
     public class PropertyComparer<T> : IComparer<T>
     {
         #region Public Constructor
 
         public PropertyComparer(PropertyDescriptor property, ListSortDirection direction)
         {
-            this.propertyDescriptor = property;
-            Type comparerForPropertyType = typeof(Comparer<>).MakeGenericType(property.PropertyType);
-            this.comparer =
+            propertyDescriptor = property;
+            var comparerForPropertyType = typeof(Comparer<>).MakeGenericType(property.PropertyType);
+            comparer =
                 (IComparer)
-                    comparerForPropertyType.InvokeMember("Default", BindingFlags.Static | BindingFlags.GetProperty | BindingFlags.Public, null, null, null);
-            this.SetListSortDirection(direction);
+                comparerForPropertyType.InvokeMember("Default",
+                    BindingFlags.Static | BindingFlags.GetProperty | BindingFlags.Public, null, null, null);
+            SetListSortDirection(direction);
         }
 
         #endregion
@@ -37,7 +53,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         public int Compare(T x, T y)
         {
-            return this.reverse*this.comparer.Compare(this.propertyDescriptor.GetValue(x), this.propertyDescriptor.GetValue(y));
+            return reverse*comparer.Compare(propertyDescriptor.GetValue(x), propertyDescriptor.GetValue(y));
         }
 
         #endregion
@@ -46,8 +62,8 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         public void SetPropertyAndDirection(PropertyDescriptor descriptor, ListSortDirection direction)
         {
-            this.SetPropertyDescriptor(descriptor);
-            this.SetListSortDirection(direction);
+            SetPropertyDescriptor(descriptor);
+            SetListSortDirection(direction);
         }
 
         #endregion
@@ -64,12 +80,12 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         private void SetPropertyDescriptor(PropertyDescriptor descriptor)
         {
-            this.propertyDescriptor = descriptor;
+            propertyDescriptor = descriptor;
         }
 
         private void SetListSortDirection(ListSortDirection direction)
         {
-            this.reverse = direction == ListSortDirection.Ascending ? 1 : -1;
+            reverse = direction == ListSortDirection.Ascending ? 1 : -1;
         }
 
         #endregion

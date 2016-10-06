@@ -1,49 +1,61 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
-
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Microsoft.Azure.Devices;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Message = Microsoft.Azure.Devices.Client.Message;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceEmulator
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Drawing;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Windows.Forms;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-    using Message = Microsoft.Azure.Devices.Client.Message;
-
     public partial class MainForm : Form
     {
         #region Public Constructor
 
         /// <summary>
-        /// Initializes a new instance of the MainForm class.
+        ///     Initializes a new instance of the MainForm class.
         /// </summary>
         public MainForm()
         {
-            this.InitializeComponent();
-            this.ConfigureComponent();
-            this.ReadConfiguration();
+            InitializeComponent();
+            ConfigureComponent();
+            ReadConfiguration();
         }
 
         #endregion
@@ -122,33 +134,29 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
 
         public void ConfigureComponent()
         {
-            this.txtConnectionString.AutoSize = false;
-            this.txtConnectionString.Size = new Size(this.txtConnectionString.Size.Width, 24);
-            this.txtDeviceCount.AutoSize = false;
-            this.txtDeviceCount.Size = new Size(this.txtDeviceCount.Size.Width, 24);
-            this.txtEventIntervalInMilliseconds.AutoSize = false;
-            this.txtEventIntervalInMilliseconds.Size = new Size(this.txtEventIntervalInMilliseconds.Size.Width, 24);
-            this.txtMinValue.AutoSize = false;
-            this.txtMinValue.Size = new Size(this.txtMinValue.Size.Width, 24);
-            this.txtMaxValue.AutoSize = false;
-            this.txtMaxValue.Size = new Size(this.txtMaxValue.Size.Width, 24);
-            this.txtMinOffset.AutoSize = false;
-            this.txtMinOffset.Size = new Size(this.txtMinOffset.Size.Width, 24);
-            this.txtMaxOffset.AutoSize = false;
-            this.txtMaxOffset.Size = new Size(this.txtMinOffset.Size.Width, 24);
+            txtConnectionString.AutoSize = false;
+            txtConnectionString.Size = new Size(txtConnectionString.Size.Width, 24);
+            txtDeviceCount.AutoSize = false;
+            txtDeviceCount.Size = new Size(txtDeviceCount.Size.Width, 24);
+            txtEventIntervalInMilliseconds.AutoSize = false;
+            txtEventIntervalInMilliseconds.Size = new Size(txtEventIntervalInMilliseconds.Size.Width, 24);
+            txtMinValue.AutoSize = false;
+            txtMinValue.Size = new Size(txtMinValue.Size.Width, 24);
+            txtMaxValue.AutoSize = false;
+            txtMaxValue.Size = new Size(txtMaxValue.Size.Width, 24);
+            txtMinOffset.AutoSize = false;
+            txtMinOffset.Size = new Size(txtMinOffset.Size.Width, 24);
+            txtMaxOffset.AutoSize = false;
+            txtMaxOffset.Size = new Size(txtMinOffset.Size.Width, 24);
         }
 
         public void HandleException(Exception ex)
         {
             if (string.IsNullOrEmpty(ex?.Message))
-            {
                 return;
-            }
-            this.WriteToLog(string.Format(CultureInfo.CurrentCulture, ExceptionFormat, ex.Message));
+            WriteToLog(string.Format(CultureInfo.CurrentCulture, ExceptionFormat, ex.Message));
             if (!string.IsNullOrEmpty(ex.InnerException?.Message))
-            {
-                this.WriteToLog(string.Format(CultureInfo.CurrentCulture, InnerExceptionFormat, ex.InnerException.Message));
-            }
+                WriteToLog(string.Format(CultureInfo.CurrentCulture, InnerExceptionFormat, ex.InnerException.Message));
         }
 
         #endregion
@@ -158,12 +166,10 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         public static bool IsJson(string item)
         {
             if (item == null)
-            {
                 throw new ArgumentException("The item argument cannot be null.");
-            }
             try
             {
-                JToken obj = JToken.Parse(item);
+                var obj = JToken.Parse(item);
                 return obj != null;
             }
             catch (Exception)
@@ -175,9 +181,7 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         public string IndentJson(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
-            {
                 return null;
-            }
             dynamic parsedJson = JsonConvert.DeserializeObject(json);
             return JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
         }
@@ -186,62 +190,56 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         {
             try
             {
-                string urlValue = ConfigurationManager.AppSettings[UrlParameter];
-                string[] urls = urlValue.Split(',', ';');
-                foreach (string url in urls)
-                {
-                    this.cboDeviceManagementServiceUrl.Items.Add(url);
-                }
-                this.cboDeviceManagementServiceUrl.SelectedIndex = 0;
+                var urlValue = ConfigurationManager.AppSettings[UrlParameter];
+                var urls = urlValue.Split(',', ';');
+                foreach (var url in urls)
+                    cboDeviceManagementServiceUrl.Items.Add(url);
+                cboDeviceManagementServiceUrl.SelectedIndex = 0;
 
-                this.txtConnectionString.Text = ConfigurationManager.AppSettings[ConnectionStringParameter];
+                txtConnectionString.Text = ConfigurationManager.AppSettings[ConnectionStringParameter];
 
                 int value;
-                string setting = ConfigurationManager.AppSettings[DeviceCountParameter];
-                this.txtDeviceCount.Text = int.TryParse(setting, out value)
+                var setting = ConfigurationManager.AppSettings[DeviceCountParameter];
+                txtDeviceCount.Text = int.TryParse(setting, out value)
                     ? value.ToString(CultureInfo.InvariantCulture)
                     : DefaultDeviceNumber.ToString(CultureInfo.InvariantCulture);
                 setting = ConfigurationManager.AppSettings[EventIntervalParameter];
-                this.txtEventIntervalInMilliseconds.Text = int.TryParse(setting, out value)
+                txtEventIntervalInMilliseconds.Text = int.TryParse(setting, out value)
                     ? value.ToString(CultureInfo.InvariantCulture)
                     : DefaultEventIntervalInMilliseconds.ToString(CultureInfo.InvariantCulture);
                 setting = ConfigurationManager.AppSettings[MinValueParameter];
-                this.txtMinValue.Text = int.TryParse(setting, out value)
+                txtMinValue.Text = int.TryParse(setting, out value)
                     ? value.ToString(CultureInfo.InvariantCulture)
                     : DefaultMinValue.ToString(CultureInfo.InvariantCulture);
                 setting = ConfigurationManager.AppSettings[MaxValueParameter];
-                this.txtMaxValue.Text = int.TryParse(setting, out value)
+                txtMaxValue.Text = int.TryParse(setting, out value)
                     ? value.ToString(CultureInfo.InvariantCulture)
                     : DefaultMaxValue.ToString(CultureInfo.InvariantCulture);
                 setting = ConfigurationManager.AppSettings[MinOffsetParameter];
-                this.txtMinOffset.Text = int.TryParse(setting, out value)
+                txtMinOffset.Text = int.TryParse(setting, out value)
                     ? value.ToString(CultureInfo.InvariantCulture)
                     : DefaultMinOffset.ToString(CultureInfo.InvariantCulture);
                 setting = ConfigurationManager.AppSettings[MaxOffsetParameter];
-                this.txtMaxOffset.Text = int.TryParse(setting, out value)
+                txtMaxOffset.Text = int.TryParse(setting, out value)
                     ? value.ToString(CultureInfo.InvariantCulture)
                     : DefaultMaxOffset.ToString(CultureInfo.InvariantCulture);
                 setting = ConfigurationManager.AppSettings[SpikePercentageParameter];
-                this.trackbarSpikePercentage.Value = int.TryParse(setting, out value)
+                trackbarSpikePercentage.Value = int.TryParse(setting, out value)
                     ? value
                     : DefaultSpikePercentage;
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
             }
         }
 
         private void WriteToLog(string message)
         {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new Action<string>(this.InternalWriteToLog), message);
-            }
+            if (InvokeRequired)
+                Invoke(new Action<string>(InternalWriteToLog), message);
             else
-            {
-                this.InternalWriteToLog(message);
-            }
+                InternalWriteToLog(message);
         }
 
         private void InternalWriteToLog(string message)
@@ -249,32 +247,28 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
             lock (this)
             {
                 if (string.IsNullOrEmpty(message))
-                {
                     return;
-                }
-                string[] lines = message.Split('\n');
-                DateTime now = DateTime.Now;
-                string space = new string(' ', 19);
+                var lines = message.Split('\n');
+                var now = DateTime.Now;
+                var space = new string(' ', 19);
 
-                for (int i = 0; i < lines.Length; i++)
-                {
+                for (var i = 0; i < lines.Length; i++)
                     if (i == 0)
                     {
-                        string line = string.Format(
+                        var line = string.Format(
                             DateFormat,
                             now.Hour,
                             now.Minute,
                             now.Second,
                             lines[i]);
-                        this.lstLog.Items.Add(line);
+                        lstLog.Items.Add(line);
                     }
                     else
                     {
-                        this.lstLog.Items.Add(space + lines[i]);
+                        lstLog.Items.Add(space + lines[i]);
                     }
-                }
-                this.lstLog.SelectedIndex = this.lstLog.Items.Count - 1;
-                this.lstLog.SelectedIndex = -1;
+                lstLog.SelectedIndex = lstLog.Items.Count - 1;
+                lstLog.SelectedIndex = -1;
             }
         }
 
@@ -284,16 +278,16 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void clearLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.lstLog.Items.Clear();
+            lstLog.Items.Clear();
         }
 
         /// <summary>
-        /// Saves the log to a text file
+        ///     Saves the log to a text file
         /// </summary>
         /// <param name="sender">MainForm object</param>
         /// <param name="e">System.EventArgs parameter</param>
@@ -301,99 +295,91 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         {
             try
             {
-                if (this.lstLog.Items.Count <= 0)
-                {
+                if (lstLog.Items.Count <= 0)
                     return;
-                }
-                this.saveFileDialog.Title = SaveAsTitle;
-                this.saveFileDialog.DefaultExt = SaveAsExtension;
-                this.saveFileDialog.Filter = SaveAsFilter;
-                this.saveFileDialog.FileName = string.Format(
+                saveFileDialog.Title = SaveAsTitle;
+                saveFileDialog.DefaultExt = SaveAsExtension;
+                saveFileDialog.Filter = SaveAsFilter;
+                saveFileDialog.FileName = string.Format(
                     LogFileNameFormat,
                     DateTime.Now.ToString(CultureInfo.CurrentUICulture).Replace('/', '-').Replace(':', '-'));
-                if (this.saveFileDialog.ShowDialog() != DialogResult.OK ||
-                    string.IsNullOrEmpty(this.saveFileDialog.FileName))
-                {
+                if ((saveFileDialog.ShowDialog() != DialogResult.OK) ||
+                    string.IsNullOrEmpty(saveFileDialog.FileName))
                     return;
-                }
-                using (StreamWriter writer = new StreamWriter(this.saveFileDialog.FileName))
+                using (var writer = new StreamWriter(saveFileDialog.FileName))
                 {
-                    foreach (object t in this.lstLog.Items)
-                    {
+                    foreach (var t in lstLog.Items)
                         writer.WriteLine(t as string);
-                    }
                 }
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
             }
         }
 
         private void logWindowToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.splitContainer.Panel2Collapsed = !((ToolStripMenuItem) sender).Checked;
+            splitContainer.Panel2Collapsed = !((ToolStripMenuItem) sender).Checked;
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AboutForm form = new AboutForm();
+            var form = new AboutForm();
             form.ShowDialog();
         }
 
         private void lstLog_Leave(object sender, EventArgs e)
         {
-            this.lstLog.SelectedIndex = -1;
+            lstLog.SelectedIndex = -1;
         }
 
         private void button_MouseEnter(object sender, EventArgs e)
         {
-            Control control = sender as Control;
+            var control = sender as Control;
             if (control != null)
-            {
                 control.ForeColor = Color.White;
-            }
         }
 
         private void button_MouseLeave(object sender, EventArgs e)
         {
-            Control control = sender as Control;
+            var control = sender as Control;
             if (control != null)
-            {
                 control.ForeColor = SystemColors.ControlText;
-            }
         }
 
         // ReSharper disable once FunctionComplexityOverflow
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
-            int width = (this.mainHeaderPanel.Size.Width - 80)/2;
-            int halfWidth = (width - 16)/2;
+            var width = (mainHeaderPanel.Size.Width - 80)/2;
+            var halfWidth = (width - 16)/2;
 
-            this.txtMinOffset.Size = new Size(halfWidth, this.txtMinOffset.Size.Height);
-            this.txtMaxOffset.Size = new Size(halfWidth, this.txtMaxOffset.Size.Height);
-            this.txtDeviceCount.Size = new Size(halfWidth, this.txtDeviceCount.Size.Height);
-            this.txtEventIntervalInMilliseconds.Size = new Size(halfWidth, this.txtEventIntervalInMilliseconds.Size.Height);
-            this.txtMinValue.Size = new Size(halfWidth, this.txtMinValue.Size.Height);
-            this.txtMaxValue.Size = new Size(halfWidth, this.txtMaxValue.Size.Height);
-            this.trackbarSpikePercentage.Size = new Size(width, this.trackbarSpikePercentage.Size.Height);
+            txtMinOffset.Size = new Size(halfWidth, txtMinOffset.Size.Height);
+            txtMaxOffset.Size = new Size(halfWidth, txtMaxOffset.Size.Height);
+            txtDeviceCount.Size = new Size(halfWidth, txtDeviceCount.Size.Height);
+            txtEventIntervalInMilliseconds.Size = new Size(halfWidth, txtEventIntervalInMilliseconds.Size.Height);
+            txtMinValue.Size = new Size(halfWidth, txtMinValue.Size.Height);
+            txtMaxValue.Size = new Size(halfWidth, txtMaxValue.Size.Height);
+            trackbarSpikePercentage.Size = new Size(width, trackbarSpikePercentage.Size.Height);
 
-            this.txtMaxValue.Location = new Point(32 + halfWidth, this.txtMaxValue.Location.Y);
-            this.txtMinOffset.Location = new Point(32 + width, this.txtMaxOffset.Location.Y);
-            this.txtMaxOffset.Location = new Point(48 + +width + halfWidth, this.txtMaxOffset.Location.Y);
-            this.txtEventIntervalInMilliseconds.Location = new Point(32 + halfWidth, this.txtEventIntervalInMilliseconds.Location.Y);
-            this.trackbarSpikePercentage.Location = new Point(32 + width, this.trackbarSpikePercentage.Location.Y);
+            txtMaxValue.Location = new Point(32 + halfWidth, txtMaxValue.Location.Y);
+            txtMinOffset.Location = new Point(32 + width, txtMaxOffset.Location.Y);
+            txtMaxOffset.Location = new Point(48 + +width + halfWidth, txtMaxOffset.Location.Y);
+            txtEventIntervalInMilliseconds.Location = new Point(32 + halfWidth,
+                txtEventIntervalInMilliseconds.Location.Y);
+            trackbarSpikePercentage.Location = new Point(32 + width, trackbarSpikePercentage.Location.Y);
 
-            this.lblMaxValue.Location = new Point(32 + halfWidth, this.lblMaxValue.Location.Y);
-            this.lblMinOffset.Location = new Point(32 + width, this.lblMaxOffset.Location.Y);
-            this.lblMaxOffset.Location = new Point(48 + +width + halfWidth, this.lblMaxOffset.Location.Y);
-            this.lblEventIntervalInMilliseconds.Location = new Point(32 + halfWidth, this.lblEventIntervalInMilliseconds.Location.Y);
-            this.lblSpikePercentage.Location = new Point(32 + width, this.lblSpikePercentage.Location.Y);
+            lblMaxValue.Location = new Point(32 + halfWidth, lblMaxValue.Location.Y);
+            lblMinOffset.Location = new Point(32 + width, lblMaxOffset.Location.Y);
+            lblMaxOffset.Location = new Point(48 + +width + halfWidth, lblMaxOffset.Location.Y);
+            lblEventIntervalInMilliseconds.Location = new Point(32 + halfWidth,
+                lblEventIntervalInMilliseconds.Location.Y);
+            lblSpikePercentage.Location = new Point(32 + width, lblSpikePercentage.Location.Y);
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            this.txtConnectionString.SelectionLength = 0;
+            txtConnectionString.SelectionLength = 0;
         }
 
         // ReSharper disable once FunctionComplexityOverflow
@@ -401,89 +387,83 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         {
             Cursor.Current = Cursors.WaitCursor;
 
-            if (string.Compare(this.btnStart.Text, Start, StringComparison.OrdinalIgnoreCase) == 0)
-            {
+            if (string.Compare(btnStart.Text, Start, StringComparison.OrdinalIgnoreCase) == 0)
                 try
                 {
                     // Validate parameters
-                    if (!this.ValidateParameters())
-                    {
+                    if (!ValidateParameters())
                         return;
-                    }
                     // Change button text
-                    this.btnStart.Text = Stop;
+                    btnStart.Text = Stop;
 
                     // Create cancellation token source
-                    this.cancellationTokenSource = new CancellationTokenSource();
+                    cancellationTokenSource = new CancellationTokenSource();
 
                     // Initialize Devices
-                    if (this.deviceList.Count != this.txtDeviceCount.IntegerValue)
+                    if (deviceList.Count != txtDeviceCount.IntegerValue)
                     {
-                        await this.CreateDevicesOnIoTHubIdentiyRegistryAsync();
-                        await this.InitializeDevicesAsync();
+                        await CreateDevicesOnIoTHubIdentiyRegistryAsync();
+                        await InitializeDevicesAsync();
                     }
 
                     // Start Devices
-                    this.StartDevices();
+                    StartDevices();
                 }
                 catch (Exception ex)
                 {
-                    this.HandleException(ex);
+                    HandleException(ex);
 
                     // Change button text
-                    this.btnStart.Text = Start;
+                    btnStart.Text = Start;
                 }
                 finally
                 {
                     Cursor.Current = Cursors.Default;
                 }
-            }
             else
-            {
                 try
                 {
                     // Stop Devices
-                    this.StopDevices();
+                    StopDevices();
 
                     // Change button text
-                    this.btnStart.Text = Start;
+                    btnStart.Text = Start;
                 }
                 catch (Exception ex)
                 {
-                    this.HandleException(ex);
+                    HandleException(ex);
                 }
                 finally
                 {
                     Cursor.Current = Cursors.Default;
                 }
-            }
         }
 
         private async void btnCreateDevices_Click(object sender, EventArgs e)
         {
-            await this.CreateDevicesAsync();
+            await CreateDevicesAsync();
         }
 
         private async void btnRemoveDevices_Click(object sender, EventArgs e)
         {
-            await this.RemoveDevicesAsync();
+            await RemoveDevicesAsync();
         }
 
         private bool ValidateParameters()
         {
-            if (string.IsNullOrWhiteSpace(this.txtConnectionString.Text))
+            if (string.IsNullOrWhiteSpace(txtConnectionString.Text))
             {
-                this.WriteToLog(ConnectionStringCannotBeNull);
+                WriteToLog(ConnectionStringCannotBeNull);
                 return false;
             }
-            Match match = Regex.Match(this.txtConnectionString.Text, @"HostName=([A-Za-z0-9_.-]+)", RegexOptions.IgnoreCase);
+            var match = Regex.Match(txtConnectionString.Text, @"HostName=([A-Za-z0-9_.-]+)", RegexOptions.IgnoreCase);
             if (match.Success)
             {
-                this.ioTHubUrl = match.Groups[1].Value;
+                ioTHubUrl = match.Groups[1].Value;
             }
             else
             {
-                this.WriteToLog(ConnectionStringIsWrong);
+                WriteToLog(ConnectionStringIsWrong);
                 return false;
             }
             return true;
@@ -496,56 +476,54 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
             int maxOffset,
             int spikePercentage)
         {
-            int value = this.random.Next(0, 100);
+            var value = random.Next(0, 100);
             if (value >= spikePercentage)
-            {
-                return this.random.Next(minValue, maxValue + 1);
-            }
-            int sign = this.random.Next(0, 2);
-            int offset = this.random.Next(minOffset, maxOffset + 1);
+                return random.Next(minValue, maxValue + 1);
+            var sign = random.Next(0, 2);
+            var offset = random.Next(minOffset, maxOffset + 1);
             offset = sign == 0 ? -offset : offset;
-            return this.random.Next(minValue, maxValue + 1) + offset;
+            return random.Next(minValue, maxValue + 1) + offset;
         }
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            this.lstLog.Items.Clear();
+            lstLog.Items.Clear();
         }
 
         private void StartDevices()
         {
             const string status = DefaultStatus;
-            int eventInterval = this.txtEventIntervalInMilliseconds.IntegerValue;
-            int minValue = this.txtMinValue.IntegerValue;
-            int maxValue = this.txtMaxValue.IntegerValue;
-            int minOffset = this.txtMinOffset.IntegerValue;
-            int maxOffset = this.txtMaxOffset.IntegerValue;
-            int spikePercentage = this.trackbarSpikePercentage.Value;
-            CancellationToken cancellationToken = this.cancellationTokenSource.Token;
+            var eventInterval = txtEventIntervalInMilliseconds.IntegerValue;
+            var minValue = txtMinValue.IntegerValue;
+            var maxValue = txtMaxValue.IntegerValue;
+            var minOffset = txtMinOffset.IntegerValue;
+            var maxOffset = txtMaxOffset.IntegerValue;
+            var spikePercentage = trackbarSpikePercentage.Value;
+            var cancellationToken = cancellationTokenSource.Token;
 
             // Create one task for each device
-            for (int i = 0; i < this.txtDeviceCount.IntegerValue; i++)
+            for (var i = 0; i < txtDeviceCount.IntegerValue; i++)
             {
-                int deviceId = i;
+                var deviceId = i;
 #pragma warning disable 4014
                 Task.Run(
                     async () =>
                     {
                         string deviceName = $"device{deviceId:000}";
-                        DeviceClient deviceClient = DeviceClient.Create(
-                            this.ioTHubUrl,
+                        var deviceClient = DeviceClient.Create(
+                            ioTHubUrl,
                             new DeviceAuthenticationWithRegistrySymmetricKey(
-                                this.deviceList[deviceId].Id,
-                                this.deviceList[deviceId].Authentication.SymmetricKey.PrimaryKey));
-                        this.WriteToLog($"DeviceClient [{deviceName}] successfully created.");
+                                deviceList[deviceId].Id,
+                                deviceList[deviceId].Authentication.SymmetricKey.PrimaryKey));
+                        WriteToLog($"DeviceClient [{deviceName}] successfully created.");
                         while (!cancellationToken.IsCancellationRequested)
                         {
                             // Create random value
-                            int value = this.GetValue(minValue, maxValue, minOffset, maxOffset, spikePercentage);
-                            DateTime timestamp = DateTime.Now;
+                            var value = GetValue(minValue, maxValue, minOffset, maxOffset, spikePercentage);
+                            var timestamp = DateTime.Now;
 
                             // Create EventData object with the payload serialized in JSON format 
-                            Payload payload = new Payload
+                            var payload = new Payload
                             {
                                 DeviceId = deviceId,
                                 Name = deviceName,
@@ -553,15 +531,15 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                                 Value = value,
                                 Timestamp = timestamp
                             };
-                            string json = JsonConvert.SerializeObject(payload);
-                            using (Message message = new Message(Encoding.UTF8.GetBytes(json)))
+                            var json = JsonConvert.SerializeObject(payload);
+                            using (var message = new Message(Encoding.UTF8.GetBytes(json)))
                             {
                                 // Create custom properties
                                 message.Properties.Add(Source, SourceValue);
 
                                 // Send the event to the event hub
                                 await deviceClient.SendEventAsync(message);
-                                this.WriteToLog(
+                                WriteToLog(
                                     $"[Event] DeviceId=[{payload.DeviceId:000}] " +
                                     $"Value=[{payload.Value:000}] " +
                                     $"Timestamp=[{payload.Timestamp}]");
@@ -572,20 +550,18 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                         }
                     },
                     cancellationToken).ContinueWith(
-                        t =>
-                        {
-                            if (t.IsFaulted && t.Exception != null)
-                            {
-                                this.HandleException(t.Exception);
-                            }
-                        },
-                        cancellationToken);
+                    t =>
+                    {
+                        if (t.IsFaulted && (t.Exception != null))
+                            HandleException(t.Exception);
+                    },
+                    cancellationToken);
             }
         }
 
         private void StopDevices()
         {
-            this.cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Cancel();
         }
 
         public static string Combine(string uri1, string uri2)
@@ -597,36 +573,32 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
 
         private void UpdateProgressBar(int value)
         {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new Action<int>(this.InternalUpdateProgressBar), value);
-            }
+            if (InvokeRequired)
+                Invoke(new Action<int>(InternalUpdateProgressBar), value);
             else
-            {
-                this.InternalUpdateProgressBar(value);
-            }
+                InternalUpdateProgressBar(value);
         }
 
         private void InternalUpdateProgressBar(int value)
         {
-            this.toolStripProgressBar.Value = value;
+            toolStripProgressBar.Value = value;
         }
 
         private async Task CreateDevicesOnIoTHubIdentiyRegistryAsync()
         {
             // Clear device list
-            this.deviceList.Clear();
+            deviceList.Clear();
 
             // Create device identity registry manager from the connection string
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(this.txtConnectionString.Text);
-            this.toolStripProgressBar.Minimum = 0;
-            this.toolStripProgressBar.Maximum = this.txtDeviceCount.IntegerValue;
-            this.toolStripProgressBar.Value = 0;
-            int added = 0;
+            var registryManager = RegistryManager.CreateFromConnectionString(txtConnectionString.Text);
+            toolStripProgressBar.Minimum = 0;
+            toolStripProgressBar.Maximum = txtDeviceCount.IntegerValue;
+            toolStripProgressBar.Value = 0;
+            var added = 0;
 
-            this.WriteToLog(InitializingDeviceActors);
-            List<Task> taskList = new List<Task>();
-            for (int i = 1; i <= this.txtDeviceCount.IntegerValue; i++)
+            WriteToLog(InitializingDeviceActors);
+            var taskList = new List<Task>();
+            for (var i = 1; i <= txtDeviceCount.IntegerValue; i++)
             {
                 Device device;
                 string deviceId = $"device{i:000}";
@@ -640,25 +612,23 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                             {
                                 // try to create the device in the device identity registry
                                 device = await registryManager.AddDeviceAsync(new Device(deviceId));
-                                this.WriteToLog(
+                                WriteToLog(
                                     $"Device [{deviceId}] successfully created in the device identity registry with key [{device.Authentication.SymmetricKey.PrimaryKey}]");
                             }
                             else
                             {
-                                this.WriteToLog(
+                                WriteToLog(
                                     $"Device [{deviceId}] already exists in the device identity registry with key [{device.Authentication.SymmetricKey.PrimaryKey}]");
                             }
-                            this.UpdateProgressBar(++added);
-                            this.deviceList.Add(device);
+                            UpdateProgressBar(++added);
+                            deviceList.Add(device);
                         },
-                        this.cancellationTokenSource.Token));
+                        cancellationTokenSource.Token));
             }
             // Wait for the completion of all tasks
-            await Task.WhenAll(taskList); 
-            if (!this.cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                this.WriteToLog(DeviceActorsInitialized);
-            }
+            await Task.WhenAll(taskList);
+            if (!cancellationTokenSource.Token.IsCancellationRequested)
+                WriteToLog(DeviceActorsInitialized);
         }
 
         private async Task CreateDevicesAsync()
@@ -666,20 +636,20 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
             try
             {
                 // Clear device list
-                this.deviceList.Clear();
+                deviceList.Clear();
 
                 // Create device identity registry manager from the connection string
-                this.cancellationTokenSource = new CancellationTokenSource();
-                CancellationToken cancellationToken = this.cancellationTokenSource.Token;
-                RegistryManager registryManager = RegistryManager.CreateFromConnectionString(this.txtConnectionString.Text);
-                this.toolStripProgressBar.Minimum = 0;
-                this.toolStripProgressBar.Maximum = this.txtDeviceCount.IntegerValue;
-                this.toolStripProgressBar.Value = 0;
-                int added = 0;
+                cancellationTokenSource = new CancellationTokenSource();
+                var cancellationToken = cancellationTokenSource.Token;
+                var registryManager = RegistryManager.CreateFromConnectionString(txtConnectionString.Text);
+                toolStripProgressBar.Minimum = 0;
+                toolStripProgressBar.Maximum = txtDeviceCount.IntegerValue;
+                toolStripProgressBar.Value = 0;
+                var added = 0;
 
-                this.WriteToLog(CreatingDevices);
-                List<Task> taskList = new List<Task>();
-                for (int i = 1; i <= this.txtDeviceCount.IntegerValue; i++)
+                WriteToLog(CreatingDevices);
+                var taskList = new List<Task>();
+                for (var i = 1; i <= txtDeviceCount.IntegerValue; i++)
                 {
                     Device device;
                     string deviceId = $"device{i:000}";
@@ -689,39 +659,36 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                             {
                                 try
                                 {
-                                    device = await registryManager.AddDeviceAsync(new Device(deviceId), cancellationToken);
-                                    this.WriteToLog(
+                                    device =
+                                        await registryManager.AddDeviceAsync(new Device(deviceId), cancellationToken);
+                                    WriteToLog(
                                         $"Device [{deviceId}] successfully created in the device identity registry with key [{device.Authentication.SymmetricKey.PrimaryKey}]");
                                 }
                                 catch (DeviceAlreadyExistsException)
                                 {
                                     // if the device already exists in the device identity registry, retrieve it
                                     device = await registryManager.GetDeviceAsync(deviceId, cancellationToken);
-                                    this.WriteToLog(
+                                    WriteToLog(
                                         $"Device [{deviceId}] already exists in the device identity registry with key [{device.Authentication.SymmetricKey.PrimaryKey}]");
                                 }
-                                this.UpdateProgressBar(++added);
-                                this.deviceList.Add(device);
+                                UpdateProgressBar(++added);
+                                deviceList.Add(device);
                             },
                             cancellationToken).ContinueWith(
-                                t =>
-                                {
-                                    if (t.IsFaulted && t.Exception != null)
-                                    {
-                                        this.HandleException(t.Exception);
-                                    }
-                                },
-                                cancellationToken));
+                            t =>
+                            {
+                                if (t.IsFaulted && (t.Exception != null))
+                                    HandleException(t.Exception);
+                            },
+                            cancellationToken));
                     await Task.WhenAll(taskList);
                 }
                 if (!cancellationToken.IsCancellationRequested)
-                {
-                    this.WriteToLog(DevicesCreated);
-                }
+                    WriteToLog(DevicesCreated);
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
             }
         }
 
@@ -730,17 +697,17 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
             try
             {
                 // Create device identity registry manager from the connection string
-                this.cancellationTokenSource = new CancellationTokenSource();
-                CancellationToken cancellationToken = this.cancellationTokenSource.Token;
-                RegistryManager registryManager = RegistryManager.CreateFromConnectionString(this.txtConnectionString.Text);
-                this.toolStripProgressBar.Minimum = 0;
-                this.toolStripProgressBar.Maximum = this.txtDeviceCount.IntegerValue;
-                this.toolStripProgressBar.Value = 0;
-                int removed = 0;
-                List<Task> taskList = new List<Task>();
+                cancellationTokenSource = new CancellationTokenSource();
+                var cancellationToken = cancellationTokenSource.Token;
+                var registryManager = RegistryManager.CreateFromConnectionString(txtConnectionString.Text);
+                toolStripProgressBar.Minimum = 0;
+                toolStripProgressBar.Maximum = txtDeviceCount.IntegerValue;
+                toolStripProgressBar.Value = 0;
+                var removed = 0;
+                var taskList = new List<Task>();
 
-                this.WriteToLog(RemovingDevices);
-                for (int i = 1; i <= this.txtDeviceCount.IntegerValue; i++)
+                WriteToLog(RemovingDevices);
+                for (var i = 1; i <= txtDeviceCount.IntegerValue; i++)
                 {
                     string deviceId = $"device{i:000}";
                     taskList.Add(
@@ -750,55 +717,48 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                                 try
                                 {
                                     await registryManager.RemoveDeviceAsync(deviceId, cancellationToken);
-                                    this.WriteToLog($"Device [{deviceId}] successfully removed from the device identity registry.");
+                                    WriteToLog(
+                                        $"Device [{deviceId}] successfully removed from the device identity registry.");
                                 }
                                 catch (DeviceNotFoundException)
                                 {
-                                    this.WriteToLog($"Device [{deviceId}] does not exist in the device identity registry.");
+                                    WriteToLog($"Device [{deviceId}] does not exist in the device identity registry.");
                                 }
-                                this.UpdateProgressBar(++removed);
+                                UpdateProgressBar(++removed);
                             },
                             cancellationToken).ContinueWith(
-                                t =>
-                                {
-                                    if (t.IsFaulted && t.Exception != null)
-                                    {
-                                        this.HandleException(t.Exception);
-                                    }
-                                },
-                                cancellationToken));
+                            t =>
+                            {
+                                if (t.IsFaulted && (t.Exception != null))
+                                    HandleException(t.Exception);
+                            },
+                            cancellationToken));
                 }
                 await Task.WhenAll(taskList);
                 if (!cancellationToken.IsCancellationRequested)
-                {
-                    this.WriteToLog(DevicesRemoved);
-                }
+                    WriteToLog(DevicesRemoved);
             }
             catch (AggregateException ex)
             {
-                if (ex.InnerExceptions != null && ex.InnerExceptions.Any())
-                {
-                    foreach (Exception exception in ex.InnerExceptions)
-                    {
-                        this.HandleException(exception);
-                    }
-                }
+                if ((ex.InnerExceptions != null) && ex.InnerExceptions.Any())
+                    foreach (var exception in ex.InnerExceptions)
+                        HandleException(exception);
 
                 // Change button text
-                this.btnStart.Text = Start;
+                btnStart.Text = Start;
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
 
                 // Change button text
-                this.btnStart.Text = Start;
+                btnStart.Text = Start;
             }
         }
 
         private async Task InitializeDevicesAsync()
         {
-            Dictionary<string, List<Tuple<string, string>>> manufacturerDictionary = new Dictionary<string, List<Tuple<string, string>>>
+            var manufacturerDictionary = new Dictionary<string, List<Tuple<string, string>>>
             {
                 {
                     "Contoso", new List<Tuple<string, string>>
@@ -817,7 +777,7 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                 }
             };
 
-            Dictionary<string, List<string>> siteDictionary = new Dictionary<string, List<string>>
+            var siteDictionary = new Dictionary<string, List<string>>
             {
                 {
                     "Italy",
@@ -836,25 +796,25 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                     new List<string> {"Paris", "Lion", "Nice"}
                 }
             };
-            List<PayloadEntities.Device> list = new List<PayloadEntities.Device>();
+            var list = new List<PayloadEntities.Device>();
 
             // Prepare device data
-            for (int i = 1; i <= this.txtDeviceCount.IntegerValue; i++)
+            for (var i = 1; i <= txtDeviceCount.IntegerValue; i++)
             {
-                int m = this.random.Next(0, manufacturerDictionary.Count);
-                int d = this.random.Next(0, manufacturerDictionary.Values.ElementAt(m).Count);
-                string model = manufacturerDictionary.Values.ElementAt(m)[d].Item1;
-                string type = manufacturerDictionary.Values.ElementAt(m)[d].Item2;
-                int s = this.random.Next(0, siteDictionary.Count);
-                int c = this.random.Next(0, siteDictionary.Values.ElementAt(s).Count);
+                var m = random.Next(0, manufacturerDictionary.Count);
+                var d = random.Next(0, manufacturerDictionary.Values.ElementAt(m).Count);
+                var model = manufacturerDictionary.Values.ElementAt(m)[d].Item1;
+                var type = manufacturerDictionary.Values.ElementAt(m)[d].Item2;
+                var s = random.Next(0, siteDictionary.Count);
+                var c = random.Next(0, siteDictionary.Values.ElementAt(s).Count);
 
                 list.Add(
                     new PayloadEntities.Device
                     {
                         DeviceId = i,
                         Name = $"Device {i}",
-                        MinThreshold = this.txtMinValue.IntegerValue,
-                        MaxThreshold = this.txtMaxValue.IntegerValue,
+                        MinThreshold = txtMinValue.IntegerValue,
+                        MaxThreshold = txtMaxValue.IntegerValue,
                         Manufacturer = manufacturerDictionary.Keys.ElementAt(m),
                         Model = model,
                         Type = type,
@@ -864,31 +824,32 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
             }
 
             // Create HttpClient object used to send events to the event hub.
-            HttpClient httpClient = new HttpClient
+            var httpClient = new HttpClient
             {
-                BaseAddress = new Uri(this.cboDeviceManagementServiceUrl.Text)
+                BaseAddress = new Uri(cboDeviceManagementServiceUrl.Text)
             };
             httpClient.DefaultRequestHeaders.Add("ContentType", "application/json");
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string json = JsonConvert.SerializeObject(list);
+            var json = JsonConvert.SerializeObject(list);
 
             // Create HttpContent
-            StringContent postContent = new StringContent(json, Encoding.UTF8, "application/json");
-            this.WriteToLog(InitializingDeviceActors);
-            HttpResponseMessage response = await httpClient.PostAsync(Combine(httpClient.BaseAddress.AbsoluteUri, "api/devices/set"), postContent);
+            var postContent = new StringContent(json, Encoding.UTF8, "application/json");
+            WriteToLog(InitializingDeviceActors);
+            var response =
+                await httpClient.PostAsync(Combine(httpClient.BaseAddress.AbsoluteUri, "api/devices/set"), postContent);
             response.EnsureSuccessStatusCode();
-            this.WriteToLog(DeviceActorsInitialized);
+            WriteToLog(DeviceActorsInitialized);
         }
 
         private void grouperManagementService_CustomPaint(PaintEventArgs e)
         {
             e.Graphics.DrawRectangle(
                 new Pen(SystemColors.ActiveBorder, 1),
-                this.cboDeviceManagementServiceUrl.Location.X - 1,
-                this.cboDeviceManagementServiceUrl.Location.Y - 1,
-                this.cboDeviceManagementServiceUrl.Size.Width + 1,
-                this.cboDeviceManagementServiceUrl.Size.Height + 1);
+                cboDeviceManagementServiceUrl.Location.X - 1,
+                cboDeviceManagementServiceUrl.Location.Y - 1,
+                cboDeviceManagementServiceUrl.Size.Width + 1,
+                cboDeviceManagementServiceUrl.Size.Height + 1);
         }
 
         #endregion

@@ -1,35 +1,51 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using Newtonsoft.Json;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.PayloadEntities
 {
-    using System;
-    using Newtonsoft.Json;
-
     public class Alert : Device
     {
         /// <summary>
-        /// Gets or sets the device value.
+        ///     Gets or sets the device value.
         /// </summary>
         [JsonProperty(PropertyName = "value")]
         public double Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the status.
+        ///     Gets or sets the status.
         /// </summary>
         [JsonProperty(PropertyName = "status")]
         public string Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp.
+        ///     Gets or sets the timestamp.
         /// </summary>
         [JsonProperty(PropertyName = "timestamp")]
         public DateTime Timestamp { get; set; }

@@ -1,25 +1,36 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
-
+using System;
+using System.Fabric;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.ServiceBus.Messaging;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.EventProcessorHostService
 {
-    using System;
-    using System.Fabric;
-    using System.Fabric.Description;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.ServiceBus.Messaging;
-    using Microsoft.ServiceFabric.Services.Communication.Runtime;
-
     public class EventProcessorHostListener : ICommunicationListener
     {
         #region Public Constructor
@@ -47,7 +58,9 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
         //************************************
         // Formats
         //************************************
-        private const string ParameterCannotBeNullFormat = "The parameter [{0}] is not defined in the Setting.xml configuration file.";
+        private const string ParameterCannotBeNullFormat =
+            "The parameter [{0}] is not defined in the Setting.xml configuration file.";
+
         private const string RegisteringEventProcessor = "Registering Event Processor [EventProcessor]... ";
         private const string EventProcessorRegistered = "Event Processor [EventProcessor] successfully registered. ";
 
@@ -72,31 +85,27 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
             try
             {
                 // Get the EventProcessorHostConfig section from the Settings.xml file
-                ICodePackageActivationContext codePackageActivationContext = this.context.CodePackageActivationContext;
-                ConfigurationPackage config = codePackageActivationContext.GetConfigurationPackageObject(ConfigurationPackage);
-                ConfigurationSection section = config.Settings.Sections[ConfigurationSection];
+                var codePackageActivationContext = context.CodePackageActivationContext;
+                var config = codePackageActivationContext.GetConfigurationPackageObject(ConfigurationPackage);
+                var section = config.Settings.Sections[ConfigurationSection];
 
                 // Check if a parameter called ServiceBusConnectionString exists in the EventProcessorHostConfig config section
                 if (section.Parameters.Any(
                     p => string.Compare(
-                        p.Name,
-                        StorageAccountConnectionStringParameter,
-                        StringComparison.InvariantCultureIgnoreCase) == 0))
+                             p.Name,
+                             StorageAccountConnectionStringParameter,
+                             StringComparison.InvariantCultureIgnoreCase) == 0))
                 {
                     // Read the StorageAccountConnectionString setting from the Settings.xml file
-                    ConfigurationProperty parameter = section.Parameters[StorageAccountConnectionStringParameter];
+                    var parameter = section.Parameters[StorageAccountConnectionStringParameter];
                     if (!string.IsNullOrWhiteSpace(parameter?.Value))
-                    {
-                        this.storageAccountConnectionString = parameter.Value;
-                    }
+                        storageAccountConnectionString = parameter.Value;
                     else
-                    {
                         throw new ArgumentException(
                             string.Format(
                                 ParameterCannotBeNullFormat,
                                 StorageAccountConnectionStringParameter),
                             StorageAccountConnectionStringParameter);
-                    }
                 }
                 else
                 {
@@ -110,24 +119,20 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
                 // Check if a parameter called ServiceBusConnectionString exists in the EventProcessorHostConfig config section
                 if (section.Parameters.Any(
                     p => string.Compare(
-                        p.Name,
-                        ServiceBusConnectionStringParameter,
-                        StringComparison.InvariantCultureIgnoreCase) == 0))
+                             p.Name,
+                             ServiceBusConnectionStringParameter,
+                             StringComparison.InvariantCultureIgnoreCase) == 0))
                 {
                     // Read the ServiceBusConnectionString setting from the Settings.xml file
-                    ConfigurationProperty parameter = section.Parameters[ServiceBusConnectionStringParameter];
+                    var parameter = section.Parameters[ServiceBusConnectionStringParameter];
                     if (!string.IsNullOrWhiteSpace(parameter?.Value))
-                    {
-                        this.serviceBusConnectionString = parameter.Value;
-                    }
+                        serviceBusConnectionString = parameter.Value;
                     else
-                    {
                         throw new ArgumentException(
                             string.Format(
                                 ParameterCannotBeNullFormat,
                                 ServiceBusConnectionStringParameter),
                             ServiceBusConnectionStringParameter);
-                    }
                 }
                 else
                 {
@@ -141,24 +146,20 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
                 // Check if a parameter called ConsumerGroupName exists in the EventProcessorHostConfig config section
                 if (section.Parameters.Any(
                     p => string.Compare(
-                        p.Name,
-                        ConsumerGroupNameParameter,
-                        StringComparison.InvariantCultureIgnoreCase) == 0))
+                             p.Name,
+                             ConsumerGroupNameParameter,
+                             StringComparison.InvariantCultureIgnoreCase) == 0))
                 {
                     // Read the ConsumerGroupName setting from the Settings.xml file
-                    ConfigurationProperty parameter = section.Parameters[ConsumerGroupNameParameter];
+                    var parameter = section.Parameters[ConsumerGroupNameParameter];
                     if (!string.IsNullOrWhiteSpace(parameter?.Value))
-                    {
-                        this.consumerGroupName = parameter.Value;
-                    }
+                        consumerGroupName = parameter.Value;
                     else
-                    {
                         throw new ArgumentException(
                             string.Format(
                                 ParameterCannotBeNullFormat,
                                 ConsumerGroupNameParameter),
                             ConsumerGroupNameParameter);
-                    }
                 }
                 else
                 {
@@ -172,24 +173,20 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
                 // Check if a parameter called EventHubName exists in the EventProcessorHostConfig config section
                 if (section.Parameters.Any(
                     p => string.Compare(
-                        p.Name,
-                        EventHubNameParameter,
-                        StringComparison.InvariantCultureIgnoreCase) == 0))
+                             p.Name,
+                             EventHubNameParameter,
+                             StringComparison.InvariantCultureIgnoreCase) == 0))
                 {
                     // Read the EventHubName setting from the Settings.xml file
-                    ConfigurationProperty parameter = section.Parameters[EventHubNameParameter];
+                    var parameter = section.Parameters[EventHubNameParameter];
                     if (!string.IsNullOrWhiteSpace(parameter?.Value))
-                    {
-                        this.eventHubName = parameter.Value;
-                    }
+                        eventHubName = parameter.Value;
                     else
-                    {
                         throw new ArgumentException(
                             string.Format(
                                 ParameterCannotBeNullFormat,
                                 EventHubNameParameter),
                             EventHubNameParameter);
-                    }
                 }
                 else
                 {
@@ -203,31 +200,31 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
                 // Check if a parameter called DeviceActorServiceUri exists in the DeviceActorServiceConfig config section
                 if (section.Parameters.Any(
                     p => string.Compare(
-                        p.Name,
-                        DeviceActorServiceUriParameter,
-                        StringComparison.InvariantCultureIgnoreCase) == 0))
+                             p.Name,
+                             DeviceActorServiceUriParameter,
+                             StringComparison.InvariantCultureIgnoreCase) == 0))
                 {
                     // Read the DeviceActorServiceUri setting from the Settings.xml file
-                    ConfigurationProperty parameter = section.Parameters[DeviceActorServiceUriParameter];
-                    this.deviceActorServiceUri = !string.IsNullOrWhiteSpace(parameter?.Value)
+                    var parameter = section.Parameters[DeviceActorServiceUriParameter];
+                    deviceActorServiceUri = !string.IsNullOrWhiteSpace(parameter?.Value)
                         ? parameter.Value
                         :
                         // By default, the current service assumes that if no URI is explicitly defined for the actor service
                         // in the Setting.xml file, the latter is hosted in the same Service Fabric application.
-                        $"fabric:/{this.context.ServiceName.Segments[1]}DeviceActorService";
+                        $"fabric:/{context.ServiceName.Segments[1]}DeviceActorService";
                 }
                 else
                 {
                     // By default, the current service assumes that if no URI is explicitly defined for the actor service
                     // in the Setting.xml file, the latter is hosted in the same Service Fabric application.
-                    this.deviceActorServiceUri = $"fabric:/{this.context.ServiceName.Segments[1]}DeviceActorService";
+                    deviceActorServiceUri = $"fabric:/{context.ServiceName.Segments[1]}DeviceActorService";
                 }
 
                 // Start EventProcessorHost
-                await this.StartEventProcessorAsync();
+                await StartEventProcessorAsync();
 
                 // Return Event Hub name
-                return this.eventHubName;
+                return eventHubName;
             }
             catch (Exception ex)
             {
@@ -272,15 +269,15 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
         {
             try
             {
-                EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(this.serviceBusConnectionString, this.eventHubName);
+                var eventHubClient = EventHubClient.CreateFromConnectionString(serviceBusConnectionString, eventHubName);
 
                 // Get the default Consumer Group
-                this.eventProcessorHost = new EventProcessorHost(
+                eventProcessorHost = new EventProcessorHost(
                     Guid.NewGuid().ToString(),
                     eventHubClient.Path.ToLower(),
-                    this.consumerGroupName.ToLower(),
-                    this.serviceBusConnectionString,
-                    this.storageAccountConnectionString)
+                    consumerGroupName.ToLower(),
+                    serviceBusConnectionString,
+                    storageAccountConnectionString)
                 {
                     PartitionManagerOptions = new PartitionManagerOptions
                     {
@@ -290,16 +287,16 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
                     }
                 };
                 ServiceEventSource.Current.Message(RegisteringEventProcessor);
-                EventProcessorOptions eventProcessorOptions = new EventProcessorOptions
+                var eventProcessorOptions = new EventProcessorOptions
                 {
                     InvokeProcessorAfterReceiveTimeout = true,
                     MaxBatchSize = 100,
                     PrefetchCount = 100,
-                    ReceiveTimeOut = TimeSpan.FromSeconds(30),
+                    ReceiveTimeOut = TimeSpan.FromSeconds(30)
                 };
                 eventProcessorOptions.ExceptionReceived += EventProcessorOptions_ExceptionReceived;
-                await this.eventProcessorHost.RegisterEventProcessorFactoryAsync(
-                    new EventProcessorFactory<EventProcessor>(this.deviceActorServiceUri),
+                await eventProcessorHost.RegisterEventProcessorFactoryAsync(
+                    new EventProcessorFactory<EventProcessor>(deviceActorServiceUri),
                     eventProcessorOptions);
                 ServiceEventSource.Current.Message(EventProcessorRegistered);
             }
@@ -314,12 +311,11 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
         private static void EventProcessorOptions_ExceptionReceived(object sender, ExceptionReceivedEventArgs e)
         {
             if (e?.Exception == null)
-            {
                 return;
-            }
 
             // Trace Exception
-            ServiceEventSource.Current.Message($"Exception=[{e.Exception.Message}] InnerException=[{e.Exception.InnerException?.Message ?? string.Empty}]");
+            ServiceEventSource.Current.Message(
+                $"Exception=[{e.Exception.Message}] InnerException=[{e.Exception.InnerException?.Message ?? string.Empty}]");
         }
 
         #endregion

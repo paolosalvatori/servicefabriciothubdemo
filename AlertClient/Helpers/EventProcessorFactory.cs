@@ -1,26 +1,42 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using Microsoft.ServiceBus.Messaging;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.AlertClient
 {
-    using System;
-    using Microsoft.ServiceBus.Messaging;
-
     public class EventProcessorFactory<T> : IEventProcessorFactory where T : class, IEventProcessor
     {
         #region IEventProcessorFactory Methods
 
         public IEventProcessor CreateEventProcessor(PartitionContext context)
         {
-            return this.instance ?? Activator.CreateInstance(typeof(T), this.configuration) as T;
+            return instance ?? Activator.CreateInstance(typeof(T), configuration) as T;
         }
 
         #endregion
@@ -36,7 +52,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         public EventProcessorFactory()
         {
-            this.configuration = null;
+            configuration = null;
         }
 
         public EventProcessorFactory(EventProcessorFactoryConfiguration configuration)

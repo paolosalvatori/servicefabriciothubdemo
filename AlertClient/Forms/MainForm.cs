@@ -1,40 +1,56 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using System.Configuration;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using Microsoft.AzureCat.Samples.PayloadEntities;
+using Microsoft.ServiceBus.Messaging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.AlertClient
 {
-    using System;
-    using System.Configuration;
-    using System.Drawing;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Windows.Forms;
-    using Microsoft.AzureCat.Samples.PayloadEntities;
-    using Microsoft.ServiceBus.Messaging;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     public partial class MainForm : Form
     {
         #region Public Constructor
 
         /// <summary>
-        /// Initializes a new instance of the MainForm class.
+        ///     Initializes a new instance of the MainForm class.
         /// </summary>
         public MainForm()
         {
-            this.InitializeComponent();
-            this.ConfigureComponent();
-            this.ReadConfiguration();
+            InitializeComponent();
+            ConfigureComponent();
+            ReadConfiguration();
         }
 
         #endregion
@@ -83,8 +99,12 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         //***************************
         // Messages
         //***************************
-        private const string StorageAccountConnectionStringCannotBeNull = "The Storage Account connection string cannot be null.";
-        private const string ServiceBusConnectionStringCannotBeNull = "The Service Bus connection string cannot be null.";
+        private const string StorageAccountConnectionStringCannotBeNull =
+            "The Storage Account connection string cannot be null.";
+
+        private const string ServiceBusConnectionStringCannotBeNull =
+            "The Service Bus connection string cannot be null.";
+
         private const string EventHubNameCannotBeNull = "The Event Hub name cannot be null.";
         private const string ConsumerGroupCannotBeNull = "The Consumer Group name cannot be null.";
         private const string RegisteringEventProcessor = "Registering Event Processor [EventProcessor]... ";
@@ -94,7 +114,13 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         #region Private Fields
 
-        private readonly SortableBindingList<Alert> alertBindingList = new SortableBindingList<Alert> {AllowNew = false, AllowEdit = false, AllowRemove = false};
+        private readonly SortableBindingList<Alert> alertBindingList = new SortableBindingList<Alert>
+        {
+            AllowNew = false,
+            AllowEdit = false,
+            AllowRemove = false
+        };
+
         private EventProcessorHost eventProcessorHost;
 
         #endregion
@@ -103,26 +129,26 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         public void ConfigureComponent()
         {
-            this.txtStorageAccountConnectionString.AutoSize = false;
-            this.txtStorageAccountConnectionString.Size = new Size(this.txtStorageAccountConnectionString.Size.Width, 24);
-            this.txtServiceBusConnectionString.AutoSize = false;
-            this.txtServiceBusConnectionString.Size = new Size(this.txtServiceBusConnectionString.Size.Width, 24);
-            this.cboEventHub.AutoSize = false;
-            this.cboEventHub.Size = new Size(this.cboEventHub.Size.Width, 24);
-            this.txtConsumerGroup.AutoSize = false;
-            this.txtConsumerGroup.Size = new Size(this.txtConsumerGroup.Size.Width, 24);
+            txtStorageAccountConnectionString.AutoSize = false;
+            txtStorageAccountConnectionString.Size = new Size(txtStorageAccountConnectionString.Size.Width, 24);
+            txtServiceBusConnectionString.AutoSize = false;
+            txtServiceBusConnectionString.Size = new Size(txtServiceBusConnectionString.Size.Width, 24);
+            cboEventHub.AutoSize = false;
+            cboEventHub.Size = new Size(cboEventHub.Size.Width, 24);
+            txtConsumerGroup.AutoSize = false;
+            txtConsumerGroup.Size = new Size(txtConsumerGroup.Size.Width, 24);
             // Set Grid style
-            this.alertDataGridView.EnableHeadersVisualStyles = false;
-            this.alertDataGridView.AutoGenerateColumns = false;
-            this.alertDataGridView.AutoSize = true;
+            alertDataGridView.EnableHeadersVisualStyles = false;
+            alertDataGridView.AutoGenerateColumns = false;
+            alertDataGridView.AutoSize = true;
 
             // Create the DeviceId column
-            DataGridViewTextBoxColumn textBoxColumn = new DataGridViewTextBoxColumn
+            var textBoxColumn = new DataGridViewTextBoxColumn
             {
                 DataPropertyName = DeviceId,
                 Name = DeviceId
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Create the Name column
             textBoxColumn = new DataGridViewTextBoxColumn
@@ -130,7 +156,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                 DataPropertyName = DeviceName,
                 Name = DeviceName
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Create the Value column
             textBoxColumn = new DataGridViewTextBoxColumn
@@ -138,7 +164,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                 DataPropertyName = Value,
                 Name = Value
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Create the Model column
             textBoxColumn = new DataGridViewTextBoxColumn
@@ -146,7 +172,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                 DataPropertyName = Model,
                 Name = Model
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Create the Type column
             textBoxColumn = new DataGridViewTextBoxColumn
@@ -154,7 +180,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                 DataPropertyName = Type,
                 Name = Type
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Create the Manufacturer column
             textBoxColumn = new DataGridViewTextBoxColumn
@@ -162,7 +188,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                 DataPropertyName = Manufacturer,
                 Name = Manufacturer
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Create the City column
             textBoxColumn = new DataGridViewTextBoxColumn
@@ -170,7 +196,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                 DataPropertyName = City,
                 Name = City
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Create the Country column
             textBoxColumn = new DataGridViewTextBoxColumn
@@ -178,47 +204,43 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                 DataPropertyName = Country,
                 Name = Country
             };
-            this.alertDataGridView.Columns.Add(textBoxColumn);
+            alertDataGridView.Columns.Add(textBoxColumn);
 
             // Set the selection background color for all the cells.
-            this.alertDataGridView.DefaultCellStyle.SelectionBackColor = Color.FromArgb(92, 125, 150);
-            this.alertDataGridView.DefaultCellStyle.SelectionForeColor = SystemColors.Window;
+            alertDataGridView.DefaultCellStyle.SelectionBackColor = Color.FromArgb(92, 125, 150);
+            alertDataGridView.DefaultCellStyle.SelectionForeColor = SystemColors.Window;
 
             // Set RowHeadersDefaultCellStyle.SelectionBackColor so that its default 
             // value won't override DataGridView.DefaultCellStyle.SelectionBackColor.
-            this.alertDataGridView.RowHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(153, 180, 209);
+            alertDataGridView.RowHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(153, 180, 209);
 
             // Set the background color for all rows and for alternating rows.  
             // The value for alternating rows overrides the value for all rows. 
-            this.alertDataGridView.RowsDefaultCellStyle.BackColor = SystemColors.Window;
-            this.alertDataGridView.RowsDefaultCellStyle.ForeColor = SystemColors.ControlText;
+            alertDataGridView.RowsDefaultCellStyle.BackColor = SystemColors.Window;
+            alertDataGridView.RowsDefaultCellStyle.ForeColor = SystemColors.ControlText;
             //alertDataGridView.AlternatingRowsDefaultCellStyle.BackColor = Color.White;
             //alertDataGridView.AlternatingRowsDefaultCellStyle.ForeColor = SystemColors.ControlText;
 
             // Set the row and column header styles.
-            this.alertDataGridView.RowHeadersDefaultCellStyle.BackColor = Color.FromArgb(215, 228, 242);
-            this.alertDataGridView.RowHeadersDefaultCellStyle.ForeColor = SystemColors.ControlText;
-            this.alertDataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(215, 228, 242);
-            this.alertDataGridView.ColumnHeadersDefaultCellStyle.ForeColor = SystemColors.ControlText;
+            alertDataGridView.RowHeadersDefaultCellStyle.BackColor = Color.FromArgb(215, 228, 242);
+            alertDataGridView.RowHeadersDefaultCellStyle.ForeColor = SystemColors.ControlText;
+            alertDataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(215, 228, 242);
+            alertDataGridView.ColumnHeadersDefaultCellStyle.ForeColor = SystemColors.ControlText;
 
             // Set DataGridView DataSource
-            this.alertBindingSource.DataSource = this.alertBindingList;
-            this.alertDataGridView.DataSource = this.alertBindingSource;
+            alertBindingSource.DataSource = alertBindingList;
+            alertDataGridView.DataSource = alertBindingSource;
 
-            this.dataGridView_Resize(this.alertDataGridView, null);
+            dataGridView_Resize(alertDataGridView, null);
         }
 
         public void HandleException(Exception ex)
         {
             if (string.IsNullOrEmpty(ex?.Message))
-            {
                 return;
-            }
-            this.WriteToLog(string.Format(CultureInfo.CurrentCulture, ExceptionFormat, ex.Message));
+            WriteToLog(string.Format(CultureInfo.CurrentCulture, ExceptionFormat, ex.Message));
             if (!string.IsNullOrEmpty(ex.InnerException?.Message))
-            {
-                this.WriteToLog(string.Format(CultureInfo.CurrentCulture, InnerExceptionFormat, ex.InnerException.Message));
-            }
+                WriteToLog(string.Format(CultureInfo.CurrentCulture, InnerExceptionFormat, ex.InnerException.Message));
         }
 
         #endregion
@@ -228,12 +250,10 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         public static bool IsJson(string item)
         {
             if (item == null)
-            {
                 throw new ArgumentException("The item argument cannot be null.");
-            }
             try
             {
-                JToken obj = JToken.Parse(item);
+                var obj = JToken.Parse(item);
                 return obj != null;
             }
             catch (Exception)
@@ -245,9 +265,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         public string IndentJson(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
-            {
                 return null;
-            }
             dynamic parsedJson = JsonConvert.DeserializeObject(json);
             return JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
         }
@@ -256,33 +274,30 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         {
             try
             {
-                this.txtStorageAccountConnectionString.Text = ConfigurationManager.AppSettings[StorageAccountConnectionStringParameter];
-                this.txtServiceBusConnectionString.Text = ConfigurationManager.AppSettings[ServiceBusConnectionStringParameter];
-                string eventHubValue = ConfigurationManager.AppSettings[EventHubParameter] ?? DefaultEventHubName;
-                string[] eventHubs = eventHubValue.Split(',', ';');
-                foreach (string eventHub in eventHubs)
-                {
-                    this.cboEventHub.Items.Add(eventHub);
-                }
-                this.cboEventHub.SelectedIndex = 0;
-                this.txtConsumerGroup.Text = ConfigurationManager.AppSettings[ConsumerGroupParameter] ?? DefaultConsumerGroupName;
+                txtStorageAccountConnectionString.Text =
+                    ConfigurationManager.AppSettings[StorageAccountConnectionStringParameter];
+                txtServiceBusConnectionString.Text =
+                    ConfigurationManager.AppSettings[ServiceBusConnectionStringParameter];
+                var eventHubValue = ConfigurationManager.AppSettings[EventHubParameter] ?? DefaultEventHubName;
+                var eventHubs = eventHubValue.Split(',', ';');
+                foreach (var eventHub in eventHubs)
+                    cboEventHub.Items.Add(eventHub);
+                cboEventHub.SelectedIndex = 0;
+                txtConsumerGroup.Text = ConfigurationManager.AppSettings[ConsumerGroupParameter] ??
+                                        DefaultConsumerGroupName;
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
             }
         }
 
         private void WriteToLog(string message)
         {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new Action<string>(this.InternalWriteToLog), message);
-            }
+            if (InvokeRequired)
+                Invoke(new Action<string>(InternalWriteToLog), message);
             else
-            {
-                this.InternalWriteToLog(message);
-            }
+                InternalWriteToLog(message);
         }
 
         private void InternalWriteToLog(string message)
@@ -290,32 +305,28 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             lock (this)
             {
                 if (string.IsNullOrEmpty(message))
-                {
                     return;
-                }
-                string[] lines = message.Split('\n');
-                DateTime now = DateTime.Now;
-                string space = new string(' ', 19);
+                var lines = message.Split('\n');
+                var now = DateTime.Now;
+                var space = new string(' ', 19);
 
-                for (int i = 0; i < lines.Length; i++)
-                {
+                for (var i = 0; i < lines.Length; i++)
                     if (i == 0)
                     {
-                        string line = string.Format(
+                        var line = string.Format(
                             DateFormat,
                             now.Hour,
                             now.Minute,
                             now.Second,
                             lines[i]);
-                        this.lstLog.Items.Add(line);
+                        lstLog.Items.Add(line);
                     }
                     else
                     {
-                        this.lstLog.Items.Add(space + lines[i]);
+                        lstLog.Items.Add(space + lines[i]);
                     }
-                }
-                this.lstLog.SelectedIndex = this.lstLog.Items.Count - 1;
-                this.lstLog.SelectedIndex = -1;
+                lstLog.SelectedIndex = lstLog.Items.Count - 1;
+                lstLog.SelectedIndex = -1;
             }
         }
 
@@ -325,16 +336,16 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void clearLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.lstLog.Items.Clear();
+            lstLog.Items.Clear();
         }
 
         /// <summary>
-        /// Saves the log to a text file
+        ///     Saves the log to a text file
         /// </summary>
         /// <param name="sender">MainForm object</param>
         /// <param name="e">System.EventArgs parameter</param>
@@ -342,82 +353,72 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         {
             try
             {
-                if (this.lstLog.Items.Count <= 0)
-                {
+                if (lstLog.Items.Count <= 0)
                     return;
-                }
-                this.saveFileDialog.Title = SaveAsTitle;
-                this.saveFileDialog.DefaultExt = SaveAsExtension;
-                this.saveFileDialog.Filter = SaveAsFilter;
-                this.saveFileDialog.FileName = string.Format(
+                saveFileDialog.Title = SaveAsTitle;
+                saveFileDialog.DefaultExt = SaveAsExtension;
+                saveFileDialog.Filter = SaveAsFilter;
+                saveFileDialog.FileName = string.Format(
                     LogFileNameFormat,
                     DateTime.Now.ToString(CultureInfo.CurrentUICulture).Replace('/', '-').Replace(':', '-'));
-                if (this.saveFileDialog.ShowDialog() != DialogResult.OK ||
-                    string.IsNullOrEmpty(this.saveFileDialog.FileName))
-                {
+                if ((saveFileDialog.ShowDialog() != DialogResult.OK) ||
+                    string.IsNullOrEmpty(saveFileDialog.FileName))
                     return;
-                }
-                using (StreamWriter writer = new StreamWriter(this.saveFileDialog.FileName))
+                using (var writer = new StreamWriter(saveFileDialog.FileName))
                 {
-                    foreach (object t in this.lstLog.Items)
-                    {
+                    foreach (var t in lstLog.Items)
                         writer.WriteLine(t as string);
-                    }
                 }
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
             }
         }
 
         private void logWindowToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.splitContainer.Panel2Collapsed = !((ToolStripMenuItem) sender).Checked;
+            splitContainer.Panel2Collapsed = !((ToolStripMenuItem) sender).Checked;
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AboutForm form = new AboutForm();
+            var form = new AboutForm();
             form.ShowDialog();
         }
 
         private void lstLog_Leave(object sender, EventArgs e)
         {
-            this.lstLog.SelectedIndex = -1;
+            lstLog.SelectedIndex = -1;
         }
 
         private void button_MouseEnter(object sender, EventArgs e)
         {
-            Control control = sender as Control;
+            var control = sender as Control;
             if (control != null)
-            {
                 control.ForeColor = Color.White;
-            }
         }
 
         private void button_MouseLeave(object sender, EventArgs e)
         {
-            Control control = sender as Control;
+            var control = sender as Control;
             if (control != null)
-            {
                 control.ForeColor = SystemColors.ControlText;
-            }
         }
 
         // ReSharper disable once FunctionComplexityOverflow
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
-            int width = (this.mainHeaderPanel.Size.Width - 48)/2;
+            var width = (mainHeaderPanel.Size.Width - 48)/2;
 
-            this.cboEventHub.Size = new Size(width, this.cboEventHub.Size.Height);
-            this.txtConsumerGroup.Size = new Size(width, this.txtConsumerGroup.Size.Height);
-            this.txtConsumerGroup.Location = new Point(32 + width, this.txtConsumerGroup.Location.Y);
+            cboEventHub.Size = new Size(width, cboEventHub.Size.Height);
+            txtConsumerGroup.Size = new Size(width, txtConsumerGroup.Size.Height);
+            txtConsumerGroup.Location = new Point(32 + width, txtConsumerGroup.Location.Y);
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            this.txtServiceBusConnectionString.SelectionLength = 0;
+            txtServiceBusConnectionString.SelectionLength = 0;
         }
 
         // ReSharper disable once FunctionComplexityOverflow
@@ -427,24 +428,23 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             {
                 Cursor.Current = Cursors.WaitCursor;
 
-                if (string.Compare(this.btnStart.Text, Start, StringComparison.OrdinalIgnoreCase) == 0)
+                if (string.Compare(btnStart.Text, Start, StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     // Validate parameters
-                    if (!this.ValidateParameters())
-                    {
+                    if (!ValidateParameters())
                         return;
-                    }
-                    this.btnStart.Enabled = false;
+                    btnStart.Enabled = false;
 
-                    EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(this.txtServiceBusConnectionString.Text, this.cboEventHub.Text);
+                    var eventHubClient = EventHubClient.CreateFromConnectionString(txtServiceBusConnectionString.Text,
+                        cboEventHub.Text);
 
                     // Get the default Consumer Group
-                    this.eventProcessorHost = new EventProcessorHost(
+                    eventProcessorHost = new EventProcessorHost(
                         Guid.NewGuid().ToString(),
                         eventHubClient.Path.ToLower(),
-                        this.txtConsumerGroup.Text.ToLower(),
-                        this.txtServiceBusConnectionString.Text,
-                        this.txtStorageAccountConnectionString.Text)
+                        txtConsumerGroup.Text.ToLower(),
+                        txtServiceBusConnectionString.Text,
+                        txtStorageAccountConnectionString.Text)
                     {
                         PartitionManagerOptions = new PartitionManagerOptions
                         {
@@ -453,79 +453,75 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                             LeaseInterval = TimeSpan.FromSeconds(30) // Default value is 30 seconds
                         }
                     };
-                    this.WriteToLog(RegisteringEventProcessor);
-                    EventProcessorOptions eventProcessorOptions = new EventProcessorOptions
+                    WriteToLog(RegisteringEventProcessor);
+                    var eventProcessorOptions = new EventProcessorOptions
                     {
                         InvokeProcessorAfterReceiveTimeout = true,
                         MaxBatchSize = 100,
                         PrefetchCount = 100,
-                        ReceiveTimeOut = TimeSpan.FromSeconds(30),
+                        ReceiveTimeOut = TimeSpan.FromSeconds(30)
                     };
-                    eventProcessorOptions.ExceptionReceived += this.EventProcessorOptions_ExceptionReceived;
-                    EventProcessorFactoryConfiguration eventProcessorFactoryConfiguration = new EventProcessorFactoryConfiguration
+                    eventProcessorOptions.ExceptionReceived += EventProcessorOptions_ExceptionReceived;
+                    var eventProcessorFactoryConfiguration = new EventProcessorFactoryConfiguration
                     {
-                        TrackEvent = a => this.Invoke(new Action<Alert>(i => this.alertBindingList.Add(i)), a),
-                        WriteToLog = m => this.Invoke(new Action<string>(this.WriteToLog), m)
+                        TrackEvent = a => Invoke(new Action<Alert>(i => alertBindingList.Add(i)), a),
+                        WriteToLog = m => Invoke(new Action<string>(WriteToLog), m)
                     };
-                    await this.eventProcessorHost.RegisterEventProcessorFactoryAsync(
+                    await eventProcessorHost.RegisterEventProcessorFactoryAsync(
                         new EventProcessorFactory<EventProcessor>(eventProcessorFactoryConfiguration),
                         eventProcessorOptions);
-                    this.WriteToLog(EventProcessorRegistered);
+                    WriteToLog(EventProcessorRegistered);
 
                     // Change button text
-                    this.btnStart.Text = Stop;
+                    btnStart.Text = Stop;
                 }
                 else
                 {
                     // Stop Event Processor
-                    if (this.eventProcessorHost != null)
-                    {
-                        await this.eventProcessorHost.UnregisterEventProcessorAsync();
-                    }
+                    if (eventProcessorHost != null)
+                        await eventProcessorHost.UnregisterEventProcessorAsync();
 
                     // Change button text
-                    this.btnStart.Text = Start;
+                    btnStart.Text = Start;
                 }
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
             }
             finally
             {
                 Cursor.Current = Cursors.Default;
-                this.btnStart.Enabled = true;
+                btnStart.Enabled = true;
             }
         }
 
         private void EventProcessorOptions_ExceptionReceived(object sender, ExceptionReceivedEventArgs e)
         {
             if (e?.Exception != null)
-            {
-                this.WriteToLog(e.Exception.Message);
-            }
+                WriteToLog(e.Exception.Message);
         }
 
         private bool ValidateParameters()
         {
-            if (string.IsNullOrWhiteSpace(this.txtServiceBusConnectionString.Text))
+            if (string.IsNullOrWhiteSpace(txtServiceBusConnectionString.Text))
             {
-                this.WriteToLog(StorageAccountConnectionStringCannotBeNull);
+                WriteToLog(StorageAccountConnectionStringCannotBeNull);
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(this.txtServiceBusConnectionString.Text))
+            if (string.IsNullOrWhiteSpace(txtServiceBusConnectionString.Text))
             {
-                this.WriteToLog(ServiceBusConnectionStringCannotBeNull);
+                WriteToLog(ServiceBusConnectionStringCannotBeNull);
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(this.cboEventHub.Text))
+            if (string.IsNullOrWhiteSpace(cboEventHub.Text))
             {
-                this.WriteToLog(EventHubNameCannotBeNull);
+                WriteToLog(EventHubNameCannotBeNull);
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(this.txtConsumerGroup.Text))
+            if (string.IsNullOrWhiteSpace(txtConsumerGroup.Text))
             {
-                this.WriteToLog(ConsumerGroupCannotBeNull);
+                WriteToLog(ConsumerGroupCannotBeNull);
                 return false;
             }
             return true;
@@ -533,35 +529,35 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            this.lstLog.Items.Clear();
-            this.alertBindingList.Clear();
+            lstLog.Items.Clear();
+            alertBindingList.Clear();
         }
 
         private void logTabControl_DrawItem(object sender, DrawItemEventArgs e)
         {
-            this.DrawTabControlTabs(this.logTabControl, e, null);
+            DrawTabControlTabs(logTabControl, e, null);
         }
 
         private void DrawTabControlTabs(TabControl tabControl, DrawItemEventArgs e, ImageList images)
         {
             // Get the bounding end of tab strip rectangles.
-            Rectangle tabstripEndRect = tabControl.GetTabRect(tabControl.TabPages.Count - 1);
-            RectangleF tabstripEndRectF = new RectangleF(
+            var tabstripEndRect = tabControl.GetTabRect(tabControl.TabPages.Count - 1);
+            var tabstripEndRectF = new RectangleF(
                 tabstripEndRect.X + tabstripEndRect.Width,
                 tabstripEndRect.Y - 5,
                 tabControl.Width - (tabstripEndRect.X + tabstripEndRect.Width),
                 tabstripEndRect.Height + 5);
-            RectangleF leftVerticalLineRect = new RectangleF(
+            var leftVerticalLineRect = new RectangleF(
                 2,
                 tabstripEndRect.Y + tabstripEndRect.Height + 2,
                 2,
                 tabControl.TabPages[tabControl.SelectedIndex].Height + 2);
-            RectangleF rightVerticalLineRect = new RectangleF(
+            var rightVerticalLineRect = new RectangleF(
                 tabControl.TabPages[tabControl.SelectedIndex].Width + 4,
                 tabstripEndRect.Y + tabstripEndRect.Height + 2,
                 2,
                 tabControl.TabPages[tabControl.SelectedIndex].Height + 2);
-            RectangleF bottomHorizontalLineRect = new RectangleF(
+            var bottomHorizontalLineRect = new RectangleF(
                 2,
                 tabstripEndRect.Y + tabstripEndRect.Height + tabControl.TabPages[tabControl.SelectedIndex].Height + 2,
                 tabControl.TabPages[tabControl.SelectedIndex].Width + 4,
@@ -572,7 +568,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             // If we have an image use it.
             if (tabControl.Parent.BackgroundImage != null)
             {
-                RectangleF src = new RectangleF(
+                var src = new RectangleF(
                     tabstripEndRectF.X + tabControl.Left,
                     tabstripEndRectF.Y + tabControl.Top,
                     tabstripEndRectF.Width,
@@ -589,22 +585,20 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                     e.Graphics.FillRectangle(backBrush, rightVerticalLineRect);
                     e.Graphics.FillRectangle(backBrush, bottomHorizontalLineRect);
                     if (tabControl.SelectedIndex != 0)
-                    {
                         e.Graphics.FillRectangle(backBrush, leftVerticalBarNearFirstTab);
-                    }
                 }
             }
 
             // Set up the page and the various pieces.
-            TabPage page = tabControl.TabPages[e.Index];
-            using (SolidBrush backBrush = new SolidBrush(page.BackColor))
+            var page = tabControl.TabPages[e.Index];
+            using (var backBrush = new SolidBrush(page.BackColor))
             {
-                using (SolidBrush foreBrush = new SolidBrush(page.ForeColor))
+                using (var foreBrush = new SolidBrush(page.ForeColor))
                 {
-                    string tabName = page.Text;
+                    var tabName = page.Text;
 
                     // Set up the offset for an icon, the bounding rectangle and image size and then fill the background.
-                    int iconOffset = 0;
+                    var iconOffset = 0;
                     Rectangle tabBackgroundRect;
 
                     if (e.Index == tabControl.SelectedIndex)
@@ -620,7 +614,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                             e.Bounds.Width,
                             e.Bounds.Height + 4);
                         e.Graphics.FillRectangle(backBrush, tabBackgroundRect);
-                        Rectangle rect = new Rectangle(e.Bounds.X - 2, e.Bounds.Y - 2, 1, 2);
+                        var rect = new Rectangle(e.Bounds.X - 2, e.Bounds.Y - 2, 1, 2);
                         e.Graphics.FillRectangle(backBrush, rect);
                         rect = new Rectangle(e.Bounds.X - 1, e.Bounds.Y - 2, 1, 2);
                         e.Graphics.FillRectangle(backBrush, rect);
@@ -634,38 +628,35 @@ namespace Microsoft.AzureCat.Samples.AlertClient
                     if (images != null)
                     {
                         // Get sice and image.
-                        Size size = images.ImageSize;
+                        var size = images.ImageSize;
                         Image icon = null;
                         if (page.ImageIndex > -1)
-                        {
                             icon = images.Images[page.ImageIndex];
-                        }
                         else if (page.ImageKey != "")
-                        {
                             icon = images.Images[page.ImageKey];
-                        }
 
                         // If there is an image, use it.
                         if (icon != null)
                         {
-                            Point startPoint =
+                            var startPoint =
                                 new Point(
-                                    tabBackgroundRect.X + 2 + ((tabBackgroundRect.Height - size.Height)/2),
-                                    tabBackgroundRect.Y + 2 + ((tabBackgroundRect.Height - size.Height)/2));
+                                    tabBackgroundRect.X + 2 + (tabBackgroundRect.Height - size.Height)/2,
+                                    tabBackgroundRect.Y + 2 + (tabBackgroundRect.Height - size.Height)/2);
                             e.Graphics.DrawImage(icon, new Rectangle(startPoint, size));
                             iconOffset = size.Width + 4;
                         }
                     }
 
                     // Draw out the label.
-                    Rectangle labelRect = new Rectangle(
+                    var labelRect = new Rectangle(
                         tabBackgroundRect.X + iconOffset,
                         tabBackgroundRect.Y + 5,
                         tabBackgroundRect.Width - iconOffset,
                         tabBackgroundRect.Height - 3);
-                    using (StringFormat sf = new StringFormat {Alignment = StringAlignment.Center})
+                    using (var sf = new StringFormat {Alignment = StringAlignment.Center})
                     {
-                        e.Graphics.DrawString(tabName, new Font(e.Font.FontFamily, 8.25F, e.Font.Style), foreBrush, labelRect, sf);
+                        e.Graphics.DrawString(tabName, new Font(e.Font.FontFamily, 8.25F, e.Font.Style), foreBrush,
+                            labelRect, sf);
                     }
                 }
             }
@@ -673,48 +664,40 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         private void dataGridView_Resize(object sender, EventArgs e)
         {
-            this.CalculateLastColumnWidth(sender);
+            CalculateLastColumnWidth(sender);
         }
 
         private void dataGridView_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            this.CalculateLastColumnWidth(sender);
-            DataGridView dataGridView = sender as DataGridView;
+            CalculateLastColumnWidth(sender);
+            var dataGridView = sender as DataGridView;
             if (dataGridView == null)
-            {
                 return;
-            }
             dataGridView.FirstDisplayedScrollingRowIndex = dataGridView.RowCount - 1;
         }
 
         private void dataGridView_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
         {
-            this.CalculateLastColumnWidth(sender);
+            CalculateLastColumnWidth(sender);
         }
 
         private void CalculateLastColumnWidth(object sender)
         {
-            DataGridView dataGridView = sender as DataGridView;
+            var dataGridView = sender as DataGridView;
             if (dataGridView == null)
-            {
                 return;
-            }
             try
             {
                 dataGridView.SuspendLayout();
-                int width = dataGridView.Width - dataGridView.RowHeadersWidth;
-                VScrollBar verticalScrollbar = dataGridView.Controls.OfType<VScrollBar>().First();
+                var width = dataGridView.Width - dataGridView.RowHeadersWidth;
+                var verticalScrollbar = dataGridView.Controls.OfType<VScrollBar>().First();
                 if (verticalScrollbar.Visible)
-                {
                     width -= verticalScrollbar.Width;
-                }
-                int columnWidth = width/dataGridView.ColumnCount;
-                for (int i = 0; i < dataGridView.ColumnCount; i++)
-                {
+                var columnWidth = width/dataGridView.ColumnCount;
+                for (var i = 0; i < dataGridView.ColumnCount; i++)
                     dataGridView.Columns[i].Width = i == dataGridView.ColumnCount - 1
-                        ? columnWidth + (width - (columnWidth*dataGridView.ColumnCount))
+                        ? columnWidth + (width - columnWidth*dataGridView.ColumnCount)
                         : columnWidth;
-                }
             }
             finally
             {
@@ -726,10 +709,10 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         {
             e.Graphics.DrawRectangle(
                 new Pen(SystemColors.ActiveBorder, 1),
-                this.cboEventHub.Location.X - 1,
-                this.cboEventHub.Location.Y - 1,
-                this.cboEventHub.Size.Width + 1,
-                this.cboEventHub.Size.Height + 1);
+                cboEventHub.Location.X - 1,
+                cboEventHub.Location.Y - 1,
+                cboEventHub.Size.Width + 1,
+                cboEventHub.Size.Height + 1);
         }
 
         #endregion

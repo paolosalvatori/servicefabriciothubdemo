@@ -1,61 +1,64 @@
-// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System.Collections;
+using System.Windows.Forms;
+using System.Windows.Forms.Design;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceEmulator
 {
-    using System.Collections;
-    using System.Windows.Forms;
-    using System.Windows.Forms.Design;
-
     /// <summary>
-    /// The Designer for the <see cref="CustomTrackBar"/>.
+    ///     The Designer for the <see cref="CustomTrackBar" />.
     /// </summary>
     public class CustomTrackBarDesigner : ControlDesigner
     {
-        public CustomTrackBarDesigner()
-        {
-        }
-
         /// <summary>
-        /// Returns the allowable design time selection rules.
+        ///     Returns the allowable design time selection rules.
         /// </summary>
         public override SelectionRules SelectionRules
         {
             get
             {
-                CustomTrackBar control = this.Control as CustomTrackBar;
+                var control = Control as CustomTrackBar;
 
                 // Disallow vertical or horizontal sizing when AutoSize = True
-                if (control != null && control.AutoSize == true)
-                {
+                if ((control != null) && control.AutoSize)
                     if (control.Orientation == Orientation.Horizontal)
-                    {
-                        return (base.SelectionRules & ~SelectionRules.TopSizeable) & ~SelectionRules.BottomSizeable;
-                    }
+                        return base.SelectionRules & ~SelectionRules.TopSizeable & ~SelectionRules.BottomSizeable;
                     else //control.Orientation == Orientation.Vertical
-                    {
-                        return (base.SelectionRules & ~SelectionRules.LeftSizeable) & ~SelectionRules.RightSizeable;
-                    }
-                }
-                else
-                {
-                    return base.SelectionRules;
-                }
+                        return base.SelectionRules & ~SelectionRules.LeftSizeable & ~SelectionRules.RightSizeable;
+                return base.SelectionRules;
             }
         }
 
         //Overrides
         /// <summary>
-        /// Remove Button and Control properties that are 
-        /// not supported by the <see cref="CustomTrackBar"/>.
+        ///     Remove Button and Control properties that are
+        ///     not supported by the <see cref="CustomTrackBar" />.
         /// </summary>
         protected override void PostFilterProperties(IDictionary Properties)
         {
@@ -70,8 +73,8 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
 
         //Overrides
         /// <summary>
-        /// Remove Button and Control events that are 
-        /// not supported by the <see cref="CustomTrackBar"/>.
+        ///     Remove Button and Control events that are
+        ///     not supported by the <see cref="CustomTrackBar" />.
         /// </summary>
         protected override void PostFilterEvents(IDictionary events)
         {

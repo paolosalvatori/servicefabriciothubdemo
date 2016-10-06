@@ -1,74 +1,76 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
-
+using System;
+using System.Fabric;
+using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Runtime;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceActorService
 {
-    using System;
-    using System.Fabric;
-    using System.Fabric.Description;
-    using Microsoft.ServiceFabric.Actors.Runtime;
-
     public class DeviceActorService : ActorService
     {
         #region Public Constructor
 
-        public DeviceActorService(
-            StatefulServiceContext context,
-            ActorTypeInformation typeInfo,
-            Func<ActorBase> actorFactory = null,
-            IActorStateProvider stateProvider = null,
-            ActorServiceSettings settings = null)
-            : base(context, typeInfo, actorFactory, stateProvider, settings)
+        public DeviceActorService(StatefulServiceContext context,
+                                 ActorTypeInformation typeInfo,
+                                 Func<ActorService, ActorId, ActorBase> actorFactory,
+                                 Func<ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory,
+                                 IActorStateProvider stateProvider = null,
+                                 ActorServiceSettings settings = null)
+           : base(context, typeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
         {
             // Read settings from the DeviceActorServiceConfig section in the Settings.xml file
-            ICodePackageActivationContext activationContext = this.Context.CodePackageActivationContext;
-            ConfigurationPackage config = activationContext.GetConfigurationPackageObject(ConfigurationPackage);
-            ConfigurationSection section = config.Settings.Sections[ConfigurationSection];
+            var activationContext = Context.CodePackageActivationContext;
+            var config = activationContext.GetConfigurationPackageObject(ConfigurationPackage);
+            var section = config.Settings.Sections[ConfigurationSection];
 
             // Read the ServiceBusConnectionString setting from the Settings.xml file
-            ConfigurationProperty parameter = section.Parameters[ServiceBusConnectionStringParameter];
+            var parameter = section.Parameters[ServiceBusConnectionStringParameter];
             if (!string.IsNullOrWhiteSpace(parameter?.Value))
-            {
-                this.ServiceBusConnectionString = parameter.Value;
-            }
+                ServiceBusConnectionString = parameter.Value;
             else
-            {
                 throw new ArgumentException(
                     string.Format(ParameterCannotBeNullFormat, ServiceBusConnectionStringParameter),
                     ServiceBusConnectionStringParameter);
-            }
 
             // Read the EventHubName setting from the Settings.xml file
             parameter = section.Parameters[EventHubNameParameter];
             if (!string.IsNullOrWhiteSpace(parameter?.Value))
-            {
-                this.EventHubName = parameter.Value;
-            }
+                EventHubName = parameter.Value;
             else
-            {
                 throw new ArgumentException(
                     string.Format(ParameterCannotBeNullFormat, EventHubNameParameter),
                     EventHubNameParameter);
-            }
 
             // Read the QueueLength setting from the Settings.xml file
             parameter = section.Parameters[QueueLengthParameter];
             if (!string.IsNullOrWhiteSpace(parameter?.Value))
             {
-                this.QueueLength = DefaultQueueLength;
+                QueueLength = DefaultQueueLength;
                 int queueLength;
                 if (int.TryParse(parameter.Value, out queueLength))
-                {
-                    this.QueueLength = queueLength;
-                }
+                    QueueLength = queueLength;
             }
             else
             {
@@ -94,7 +96,8 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
         //************************************
         // Formats
         //************************************
-        private const string ParameterCannotBeNullFormat = "The parameter [{0}] is not defined in the Setting.xml configuration file.";
+        private const string ParameterCannotBeNullFormat =
+            "The parameter [{0}] is not defined in the Setting.xml configuration file.";
 
         //************************************
         // Constants
@@ -106,17 +109,17 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the service bus connection string
+        ///     Gets or sets the service bus connection string
         /// </summary>
         public string ServiceBusConnectionString { get; private set; }
 
         /// <summary>
-        /// Gets or sets the event hub name
+        ///     Gets or sets the event hub name
         /// </summary>
         public string EventHubName { get; private set; }
 
         /// <summary>
-        /// Gets or sets the queue length
+        ///     Gets or sets the queue length
         /// </summary>
         public int QueueLength { get; private set; }
 

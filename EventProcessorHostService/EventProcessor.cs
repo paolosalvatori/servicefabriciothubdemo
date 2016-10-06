@@ -1,28 +1,40 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AzureCat.Samples.DeviceActorService.Interfaces;
+using Microsoft.AzureCat.Samples.PayloadEntities;
+using Microsoft.ServiceBus.Messaging;
+using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Client;
+using Newtonsoft.Json;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.EventProcessorHostService
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.AzureCat.Samples.DeviceActorService.Interfaces;
-    using Microsoft.AzureCat.Samples.PayloadEntities;
-    using Microsoft.ServiceBus.Messaging;
-    using Microsoft.ServiceFabric.Actors;
-    using Microsoft.ServiceFabric.Actors.Client;
-    using Newtonsoft.Json;
-
     public class EventProcessor : IEventProcessor
     {
         #region Private Constants
@@ -33,7 +45,8 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
 
         #region Private Static Fields
 
-        private static readonly Dictionary<long, IDeviceActor> actorProxyDictionary = new Dictionary<long, IDeviceActor>();
+        private static readonly Dictionary<long, IDeviceActor> actorProxyDictionary =
+            new Dictionary<long, IDeviceActor>();
 
         #endregion
 
@@ -48,10 +61,8 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
         public EventProcessor(string parameter)
         {
             if (string.IsNullOrWhiteSpace(parameter))
-            {
                 throw new ArgumentNullException(DeviceActorServiceUriCannotBeNull);
-            }
-            this.serviceUri = new Uri(parameter);
+            serviceUri = new Uri(parameter);
         }
 
         #endregion
@@ -70,26 +81,20 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
             try
             {
                 if (events == null)
-                {
                     return;
-                }
-                IList<EventData> eventDataList = events as IList<EventData> ?? events.ToList();
+                var eventDataList = events as IList<EventData> ?? events.ToList();
 
                 // Trace individual events
-                foreach (Payload payload in eventDataList.Select(DeserializeEventData))
+                foreach (var payload in eventDataList.Select(DeserializeEventData))
                 {
                     // Invoke Actor
                     if (payload == null)
-                    {
                         continue;
-                    }
 
                     // Invoke Device Actor
-                    IDeviceActor proxy = this.GetActorProxy(payload.DeviceId);
+                    var proxy = GetActorProxy(payload.DeviceId);
                     if (proxy != null)
-                    {
                         await proxy.ProcessEventAsync(payload);
-                    }
                 }
 
                 // Checkpoint
@@ -103,10 +108,8 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
             catch (AggregateException ex)
             {
                 // Trace Exception
-                foreach (Exception exception in ex.InnerExceptions)
-                {
+                foreach (var exception in ex.InnerExceptions)
                     ServiceEventSource.Current.Message(exception.Message);
-                }
             }
             catch (Exception ex)
             {
@@ -122,9 +125,7 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
                 ServiceEventSource.Current.Message(
                     $"Lease lost: EventHub=[{context.EventHubPath}] ConsumerGroup=[{context.ConsumerGroupName}] PartitionId=[{context.Lease.PartitionId}]");
                 if (reason == CloseReason.Shutdown)
-                {
                     await context.CheckpointAsync();
-                }
             }
             catch (Exception ex)
             {
@@ -147,10 +148,9 @@ namespace Microsoft.AzureCat.Samples.EventProcessorHostService
             lock (actorProxyDictionary)
             {
                 if (actorProxyDictionary.ContainsKey(deviceId))
-                {
                     return actorProxyDictionary[deviceId];
-                }
-                actorProxyDictionary[deviceId] = ActorProxy.Create<IDeviceActor>(new ActorId($"device{deviceId}"), this.serviceUri);
+                actorProxyDictionary[deviceId] = ActorProxy.Create<IDeviceActor>(new ActorId($"device{deviceId}"),
+                    serviceUri);
                 return actorProxyDictionary[deviceId];
             }
         }

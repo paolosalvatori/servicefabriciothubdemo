@@ -1,30 +1,46 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AzureCat.Samples.PayloadEntities;
+using Microsoft.ServiceBus.Messaging;
+using Newtonsoft.Json;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.AlertClient
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.AzureCat.Samples.PayloadEntities;
-    using Microsoft.ServiceBus.Messaging;
-    using Newtonsoft.Json;
-
     public class EventProcessor : IEventProcessor
     {
         #region Private Fields
 
-        private EventProcessorFactoryConfiguration configuration;
+        private readonly EventProcessorFactoryConfiguration configuration;
 
         #endregion
 
@@ -33,9 +49,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         public EventProcessor(EventProcessorFactoryConfiguration configuration)
         {
             if (configuration == null)
-            {
                 throw new ArgumentNullException(nameof(configuration));
-            }
             this.configuration = configuration;
         }
 
@@ -57,13 +71,13 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             try
             {
                 // Trace Open Partition
-                this.configuration.WriteToLog(
+                configuration.WriteToLog(
                     $"[EventProcessor].[OpenAsync]:: EventHub=[{context.EventHubPath}] ConsumerGroup=[{context.ConsumerGroupName}] PartitionId=[{context.Lease.PartitionId}]");
             }
             catch (Exception ex)
             {
                 // Trace Exception
-                this.configuration.WriteToLog($"[EventProcessor].[OpenAsync]:: Exception=[{ex.Message}]");
+                configuration.WriteToLog($"[EventProcessor].[OpenAsync]:: Exception=[{ex.Message}]");
             }
             return Task.FromResult<object>(null);
         }
@@ -72,29 +86,27 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         {
             try
             {
-                EventData[] eventDatas = events as EventData[] ?? events.ToArray();
-                if (events == null || !eventDatas.Any())
-                {
+                var eventDatas = events as EventData[] ?? events.ToArray();
+                if ((events == null) || !eventDatas.Any())
                     return;
-                }
-                IList<EventData> eventDataList = events as IList<EventData> ?? eventDatas.ToList();
+                var eventDataList = events as IList<EventData> ?? eventDatas.ToList();
 
                 // Trace Process Events
-                this.configuration.WriteToLog(
+                configuration.WriteToLog(
                     $"[EventProcessor].[ProcessEventsAsync]:: EventHub=[{context.EventHubPath}] ConsumerGroup=[{context.ConsumerGroupName}] PartitionId=[{context.Lease.PartitionId}] EventCount=[{eventDataList.Count}]");
 
                 // Trace individual events
-                foreach (Alert alert in eventDataList.Select(DeserializeEventData).Where(alert => alert != null))
+                foreach (var alert in eventDataList.Select(DeserializeEventData).Where(alert => alert != null))
                 {
                     // Trace Payload
-                    this.configuration.WriteToLog(
+                    configuration.WriteToLog(
                         $"[Alert] DeviceId=[{alert.DeviceId:000}] " +
                         $"Name=[{alert.Name}] " +
                         $"Value=[{alert.Value:000}] " +
                         $"Timestamp=[{alert.Timestamp}]");
 
                     // Track event
-                    this.configuration.TrackEvent(alert);
+                    configuration.TrackEvent(alert);
                 }
 
                 // Checkpoint
@@ -103,15 +115,13 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             catch (AggregateException ex)
             {
                 // Trace Exception
-                foreach (Exception exception in ex.InnerExceptions)
-                {
-                    this.configuration.WriteToLog(exception.Message);
-                }
+                foreach (var exception in ex.InnerExceptions)
+                    configuration.WriteToLog(exception.Message);
             }
             catch (Exception ex)
             {
                 // Trace Exception
-                this.configuration.WriteToLog($"[EventProcessor].[ProcessEventsAsync]:: Exception=[{ex.Message}]");
+                configuration.WriteToLog($"[EventProcessor].[ProcessEventsAsync]:: Exception=[{ex.Message}]");
             }
         }
 
@@ -120,13 +130,11 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             try
             {
                 // Trace Open Partition
-                this.configuration.WriteToLog(
+                configuration.WriteToLog(
                     $"[EventProcessor].[CloseAsync]:: EventHub=[{context.EventHubPath}] ConsumerGroup=[{context.ConsumerGroupName}] PartitionId=[{context.Lease.PartitionId}] Reason=[{reason}]");
 
                 if (reason == CloseReason.Shutdown)
-                {
                     await context.CheckpointAsync();
-                }
             }
             catch (LeaseLostException)
             {
@@ -134,7 +142,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             catch (Exception ex)
             {
                 // Trace Exception
-                this.configuration.WriteToLog($"[EventProcessor].[CloseAsync]:: Exception=[{ex.Message}]");
+                configuration.WriteToLog($"[EventProcessor].[CloseAsync]:: Exception=[{ex.Message}]");
             }
         }
 

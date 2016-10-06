@@ -1,29 +1,45 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System.Web.Http;
+using Owin;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
 {
-    using System.Web.Http;
-    using global::Owin;
-
     public class Startup : IOwinAppBuilder
     {
         public void Configuration(IAppBuilder app)
         {
-            HttpConfiguration httpConfiguration = new HttpConfiguration();
+            var httpConfiguration = new HttpConfiguration();
             httpConfiguration.MapHttpAttributeRoutes();
             httpConfiguration.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new {id = RouteParameter.Optional});
+                "DefaultApi",
+                "api/{controller}/{id}",
+                new {id = RouteParameter.Optional});
             httpConfiguration.Formatters.Add(new BrowserJsonFormatter());
             app.UseWebApi(httpConfiguration);
         }

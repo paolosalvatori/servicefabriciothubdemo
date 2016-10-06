@@ -1,24 +1,40 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using System.Diagnostics.Tracing;
+using System.Fabric;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Services.Runtime;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
 {
-    using System;
-    using System.Diagnostics.Tracing;
-    using System.Fabric;
-    using System.IO;
-    using System.Runtime.CompilerServices;
-    using System.Threading.Tasks;
-    using Microsoft.ServiceFabric.Services.Runtime;
-
     [EventSource(Name = "IoTDemo-DeviceManagementWebService")]
     internal sealed class ServiceEventSource : EventSource
     {
@@ -62,20 +78,18 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         [Event(1, Level = EventLevel.Informational, Message = "{0}")]
         public void Message(string message, [CallerFilePath] string source = "", [CallerMemberName] string method = "")
         {
-            if (!this.IsEnabled())
-            {
+            if (!IsEnabled())
                 return;
-            }
-            this.WriteEvent(1, $"[{GetClassFromFilePath(source) ?? "UNKNOWN"}::{method ?? "UNKNOWN"}] {message}");
+            WriteEvent(1, $"[{GetClassFromFilePath(source) ?? "UNKNOWN"}::{method ?? "UNKNOWN"}] {message}");
         }
 
         [NonEvent]
         public void ServiceMessage(StatelessService service, string message, params object[] args)
         {
-            if (this.IsEnabled())
+            if (IsEnabled())
             {
-                string finalMessage = string.Format(message, args);
-                this.ServiceMessage(
+                var finalMessage = string.Format(message, args);
+                ServiceMessage(
                     service.Context.ServiceName.ToString(),
                     service.Context.ServiceTypeName,
                     service.Context.InstanceId,
@@ -90,10 +104,10 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         [NonEvent]
         public void ServiceMessage(StatefulService service, string message, params object[] args)
         {
-            if (this.IsEnabled())
+            if (IsEnabled())
             {
-                string finalMessage = string.Format(message, args);
-                this.ServiceMessage(
+                var finalMessage = string.Format(message, args);
+                ServiceMessage(
                     service.Context.ServiceName.ToString(),
                     service.Context.ServiceTypeName,
                     service.Context.ReplicaId,
@@ -116,17 +130,17 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         unsafe
 #endif
             void ServiceMessage(
-            string serviceName,
-            string serviceTypeName,
-            long replicaOrInstanceId,
-            Guid partitionId,
-            string applicationName,
-            string applicationTypeName,
-            string nodeName,
-            string message)
+                string serviceName,
+                string serviceTypeName,
+                long replicaOrInstanceId,
+                Guid partitionId,
+                string applicationName,
+                string applicationTypeName,
+                string nodeName,
+                string message)
         {
 #if !UNSAFE
-            this.WriteEvent(
+            WriteEvent(
                 ServiceMessageEventId,
                 serviceName,
                 serviceTypeName,
@@ -157,20 +171,22 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
 
         private const int ServiceTypeRegisteredEventId = 3;
 
-        [Event(ServiceTypeRegisteredEventId, Level = EventLevel.Informational, Message = "Service host process {0} registered service type {1}",
-            Keywords = Keywords.ServiceInitialization)]
+        [Event(ServiceTypeRegisteredEventId, Level = EventLevel.Informational,
+             Message = "Service host process {0} registered service type {1}",
+             Keywords = Keywords.ServiceInitialization)]
         public void ServiceTypeRegistered(int hostProcessId, string serviceType)
         {
-            this.WriteEvent(ServiceTypeRegisteredEventId, hostProcessId, serviceType);
+            WriteEvent(ServiceTypeRegisteredEventId, hostProcessId, serviceType);
         }
 
         private const int ServiceHostInitializationFailedEventId = 4;
 
-        [Event(ServiceHostInitializationFailedEventId, Level = EventLevel.Error, Message = "Service host initialization failed",
-            Keywords = Keywords.ServiceInitialization)]
+        [Event(ServiceHostInitializationFailedEventId, Level = EventLevel.Error,
+             Message = "Service host initialization failed",
+             Keywords = Keywords.ServiceInitialization)]
         public void ServiceHostInitializationFailed(string exception)
         {
-            this.WriteEvent(ServiceHostInitializationFailedEventId, exception);
+            WriteEvent(ServiceHostInitializationFailedEventId, exception);
         }
 
         // A pair of events sharing the same name prefix with a "Start"/"Stop" suffix implicitly marks boundaries of an event tracing activity.
@@ -178,26 +194,29 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         // and other statistics.
         private const int ServiceRequestStartEventId = 5;
 
-        [Event(ServiceRequestStartEventId, Level = EventLevel.Informational, Message = "Service request '{0}' started", Keywords = Keywords.Requests)]
+        [Event(ServiceRequestStartEventId, Level = EventLevel.Informational, Message = "Service request '{0}' started",
+             Keywords = Keywords.Requests)]
         public void ServiceRequestStart(string requestTypeName)
         {
-            this.WriteEvent(ServiceRequestStartEventId, requestTypeName);
+            WriteEvent(ServiceRequestStartEventId, requestTypeName);
         }
 
         private const int ServiceRequestStopEventId = 6;
 
-        [Event(ServiceRequestStopEventId, Level = EventLevel.Informational, Message = "Service request '{0}' finished", Keywords = Keywords.Requests)]
+        [Event(ServiceRequestStopEventId, Level = EventLevel.Informational, Message = "Service request '{0}' finished",
+             Keywords = Keywords.Requests)]
         public void ServiceRequestStop(string requestTypeName)
         {
-            this.WriteEvent(ServiceRequestStopEventId, requestTypeName);
+            WriteEvent(ServiceRequestStopEventId, requestTypeName);
         }
 
         private const int ServiceRequestFailedEventId = 7;
 
-        [Event(ServiceRequestFailedEventId, Level = EventLevel.Error, Message = "Service request '{0}' failed", Keywords = Keywords.Requests)]
+        [Event(ServiceRequestFailedEventId, Level = EventLevel.Error, Message = "Service request '{0}' failed",
+             Keywords = Keywords.Requests)]
         public void ServiceRequestFailed(string requestTypeName, string exception)
         {
-            this.WriteEvent(ServiceRequestFailedEventId, exception);
+            WriteEvent(ServiceRequestFailedEventId, exception);
         }
 
         #endregion
@@ -207,10 +226,8 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         private static string GetClassFromFilePath(string sourceFilePath)
         {
             if (string.IsNullOrWhiteSpace(sourceFilePath))
-            {
                 return null;
-            }
-            FileInfo file = new FileInfo(sourceFilePath);
+            var file = new FileInfo(sourceFilePath);
             return Path.GetFileNameWithoutExtension(file.Name);
         }
 

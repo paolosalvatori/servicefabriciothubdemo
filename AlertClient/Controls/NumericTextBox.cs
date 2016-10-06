@@ -1,20 +1,35 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System.Globalization;
+using System.Windows.Forms;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.AlertClient
 {
-    using System;
-    using System.Globalization;
-    using System.Windows.Forms;
-
     public class NumericTextBox : TextBox
     {
         #region Protected Methods
@@ -25,14 +40,14 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         {
             base.OnKeyPress(e);
 
-            NumberFormatInfo numberFormatInfo = CultureInfo.CurrentCulture.NumberFormat;
-            string decimalSeparator = numberFormatInfo.NumberDecimalSeparator;
-            string groupSeparator = numberFormatInfo.NumberGroupSeparator;
-            string negativeSign = numberFormatInfo.NegativeSign;
+            var numberFormatInfo = CultureInfo.CurrentCulture.NumberFormat;
+            var decimalSeparator = numberFormatInfo.NumberDecimalSeparator;
+            var groupSeparator = numberFormatInfo.NumberGroupSeparator;
+            var negativeSign = numberFormatInfo.NegativeSign;
 
-            string keyInput = e.KeyChar.ToString(CultureInfo.InvariantCulture);
+            var keyInput = e.KeyChar.ToString(CultureInfo.InvariantCulture);
 
-            if (Char.IsDigit(e.KeyChar))
+            if (char.IsDigit(e.KeyChar))
             {
                 // Digits are OK
             }
@@ -49,7 +64,7 @@ namespace Microsoft.AzureCat.Samples.AlertClient
             //    {
             //     // Let the edit control handle control and alt key combinations
             //    }
-            else if (this.AllowSpace && e.KeyChar == ' ')
+            else if (AllowSpace && (e.KeyChar == ' '))
             {
             }
             else
@@ -69,12 +84,12 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         public int IntegerValue
         {
-            get { return Int32.Parse(this.Text); }
+            get { return int.Parse(Text); }
         }
 
         public decimal DecimalValue
         {
-            get { return Decimal.Parse(this.Text); }
+            get { return decimal.Parse(Text); }
         }
 
         public bool AllowSpace { set; get; }

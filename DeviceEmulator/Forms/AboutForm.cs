@@ -1,35 +1,51 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using System.Collections;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Windows.Forms;
+using Microsoft.AzureCat.Samples.DeviceEmulator.Properties;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceEmulator
 {
-    using System;
-    using System.Collections;
-    using System.ComponentModel;
-    using System.Diagnostics;
-    using System.Drawing;
-    using System.Drawing.Drawing2D;
-    using System.Windows.Forms;
-    using Microsoft.AzureCat.Samples.DeviceEmulator.Properties;
-
     public partial class AboutForm : Form
     {
         #region Public Constructor
 
         public AboutForm()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             //This form is double buffered
-            this.SetStyle(
+            SetStyle(
                 ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.DoubleBuffer |
                 ControlStyles.ResizeRedraw |
@@ -37,18 +53,18 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                 true);
 
             //A random number generator for the initial setup
-            Random random = new Random();
+            var random = new Random();
             const int count = 10;
 
             // We create white logo bitmaps
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
-                Picture shape = new Picture(this.whiteLogoBitmap)
+                var shape = new Picture(whiteLogoBitmap)
                 {
-                    Limits = this.ClientRectangle,
+                    Limits = ClientRectangle,
                     Location = new Point(
-                        random.Next(this.ClientRectangle.Width + 16),
-                        random.Next(this.ClientRectangle.Height + 16)),
+                        random.Next(ClientRectangle.Width + 16),
+                        random.Next(ClientRectangle.Height + 16)),
                     Size = new Size(1 + random.Next(100), 1 + random.Next(100)),
                     BackColor = Color.FromArgb(random.Next(255), random.Next(255), random.Next(255)),
                     ForeColor = Color.FromArgb(random.Next(255), random.Next(255), random.Next(255)),
@@ -59,18 +75,18 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                 };
 
                 //and added to the list of shapes
-                this.shapes.Add(shape);
+                shapes.Add(shape);
             }
 
             // We create azure logo bitmaps
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
-                Picture shape = new Picture(this.azureLogoBitmap)
+                var shape = new Picture(azureLogoBitmap)
                 {
-                    Limits = this.ClientRectangle,
+                    Limits = ClientRectangle,
                     Location = new Point(
-                        random.Next(this.ClientRectangle.Width + 16),
-                        random.Next(this.ClientRectangle.Height + 16)),
+                        random.Next(ClientRectangle.Width + 16),
+                        random.Next(ClientRectangle.Height + 16)),
                     Size = new Size(1 + random.Next(100), 1 + random.Next(100)),
                     BackColor = Color.FromArgb(random.Next(255), random.Next(255), random.Next(255)),
                     ForeColor = Color.FromArgb(random.Next(255), random.Next(255), random.Next(255)),
@@ -81,13 +97,13 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                 };
 
                 //and added to the list of shapes
-                this.shapes.Add(shape);
+                shapes.Add(shape);
             }
 
             //set up the timer so that animation can take place
-            this.timer.Interval = 40;
-            this.timer.Tick += this.timer_Tick;
-            this.timer.Enabled = true;
+            timer.Interval = 40;
+            timer.Tick += timer_Tick;
+            timer.Enabled = true;
         }
 
         #endregion
@@ -113,12 +129,12 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         private readonly Bitmap azureLogoBitmap = new Bitmap(Resources.AzureLogo1);
 
         /// <summary>
-        /// A collection of Shape based objects
+        ///     A collection of Shape based objects
         /// </summary>
         private readonly ShapeCollection shapes = new ShapeCollection();
 
         /// <summary>
-        /// The message-driven timer 
+        ///     The message-driven timer
         /// </summary>
         private readonly Timer timer = new Timer();
 
@@ -128,38 +144,32 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            foreach (Shape shape in this.shapes)
-            {
+            foreach (Shape shape in shapes)
                 shape.Tick();
-            }
-            this.Invalidate();
+            Invalidate();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            foreach (Shape shape in this.shapes)
-            {
+            foreach (Shape shape in shapes)
                 shape.Draw(e.Graphics);
-            }
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            this.timer.Enabled = false;
-            this.timer.Dispose();
+            timer.Enabled = false;
+            timer.Dispose();
             base.OnClosing(e);
         }
 
         /// <summary>
-        /// Updates the limits of all current shapes so that they don't disappear off-screen
+        ///     Updates the limits of all current shapes so that they don't disappear off-screen
         /// </summary>
         /// <param name="e"></param>
         protected override void OnSizeChanged(EventArgs e)
         {
-            foreach (Shape shape in this.shapes)
-            {
-                shape.Limits = this.ClientRectangle;
-            }
+            foreach (Shape shape in shapes)
+                shape.Limits = ClientRectangle;
             base.OnSizeChanged(e);
         }
 
@@ -170,43 +180,35 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
     {
         public void Draw(Graphics g)
         {
-            this.SetupTransform(g);
-            this.RenderObject(g);
-            this.RestoreTransform(g);
+            SetupTransform(g);
+            RenderObject(g);
+            RestoreTransform(g);
         }
 
         public virtual void Tick()
         {
             //ensure that the object is in the page.
             //this is in case the window was resized
-            if (this.Location.X > this.Limits.Right)
-            {
-                this.Location = new Point(this.Limits.Right - 1, this.Location.Y);
-            }
-            if (this.Location.Y > this.Limits.Bottom)
-            {
-                this.Location = new Point(this.Location.X, this.Limits.Bottom - 1);
-            }
+            if (Location.X > Limits.Right)
+                Location = new Point(Limits.Right - 1, Location.Y);
+            if (Location.Y > Limits.Bottom)
+                Location = new Point(Location.X, Limits.Bottom - 1);
             //Generate a new location adding in the vectors
             //check the limits and switch vector directions as needed
-            int newX = this.Location.X + this.Vector.Width;
-            if (newX > this.Limits.Right || newX < this.Limits.Left)
-            {
-                this.Vector = new Size(-1*this.Vector.Width, this.Vector.Height);
-            }
-            int newY = this.Location.Y + this.Vector.Height;
-            if (newY > this.Limits.Bottom || newY < this.Limits.Top)
-            {
-                this.Vector = new Size(this.Vector.Width, -1*this.Vector.Height);
-            }
+            var newX = Location.X + Vector.Width;
+            if ((newX > Limits.Right) || (newX < Limits.Left))
+                Vector = new Size(-1*Vector.Width, Vector.Height);
+            var newY = Location.Y + Vector.Height;
+            if ((newY > Limits.Bottom) || (newY < Limits.Top))
+                Vector = new Size(Vector.Width, -1*Vector.Height);
             //This is the new position
-            this.Location = new Point(this.Location.X + this.Vector.Width, this.Location.Y + this.Vector.Height);
+            Location = new Point(Location.X + Vector.Width, Location.Y + Vector.Height);
 
             //Apply the rotation factor
-            this.Rotation += this.RotationDelta;
+            Rotation += RotationDelta;
 
             //Limit just to be neat
-            this.Rotation = (this.Rotation < 360f ? (this.Rotation >= 0 ? this.Rotation : this.Rotation + 360f) : this.Rotation - 360f);
+            Rotation = Rotation < 360f ? (Rotation >= 0 ? Rotation : Rotation + 360f) : Rotation - 360f;
         }
 
         public virtual void RenderObject(Graphics g)
@@ -214,29 +216,29 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         }
 
         /// <summary>
-        /// Sets up the transform for each shape
+        ///     Sets up the transform for each shape
         /// </summary>
         /// <remarks>
-        /// As each shape is drawn the transform for that shape including rotation and location is made to a new Matrix object.
-        /// This matrix is used to modify the graphics transform <i>For each shape</i> 
+        ///     As each shape is drawn the transform for that shape including rotation and location is made to a new Matrix object.
+        ///     This matrix is used to modify the graphics transform <i>For each shape</i>
         /// </remarks>
         /// <param name="g">The Graphics being drawn on</param>
         protected void SetupTransform(Graphics g)
         {
-            this.state = g.Save();
-            Matrix matrix = new Matrix();
-            matrix.Rotate(this.Rotation, MatrixOrder.Append);
-            matrix.Translate(this.Location.X, this.Location.Y, MatrixOrder.Append);
+            state = g.Save();
+            var matrix = new Matrix();
+            matrix.Rotate(Rotation, MatrixOrder.Append);
+            matrix.Translate(Location.X, Location.Y, MatrixOrder.Append);
             g.Transform = matrix;
         }
 
         /// <summary>
-        /// Simply restores the original state of the Graphics object
+        ///     Simply restores the original state of the Graphics object
         /// </summary>
         /// <param name="g">The Graphics object being drawn upon</param>
         protected void RestoreTransform(Graphics g)
         {
-            g.Restore(this.state);
+            g.Restore(state);
         }
 
         #region Private Fields
@@ -268,8 +270,8 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
 
         public float Transparency
         {
-            get { return this.transparency; }
-            set { this.transparency = (value >= 0 ? (value <= 1 ? value : 1) : 0); }
+            get { return transparency; }
+            set { transparency = value >= 0 ? (value <= 1 ? value : 1) : 0; }
         }
 
         #endregion
@@ -278,15 +280,15 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
     public class Square : Shape
     {
         /// <summary>
-        /// Draws a square. Note that the square is drawn about the origin.
+        ///     Draws a square. Note that the square is drawn about the origin.
         /// </summary>
         /// <param name="g">The graphics to draw on.</param>
         public override void RenderObject(Graphics g)
         {
-            Pen pen = new Pen(this.ForeColor, this.LineThickness);
-            SolidBrush solidBrush = new SolidBrush(Color.FromArgb((int) (255*this.Transparency), this.BackColor));
-            g.FillRectangle(solidBrush, -this.Size.Width/2, -this.Size.Height/2, this.Size.Width, this.Size.Height);
-            g.DrawRectangle(pen, -this.Size.Width/2, -this.Size.Height/2, this.Size.Width, this.Size.Height);
+            var pen = new Pen(ForeColor, LineThickness);
+            var solidBrush = new SolidBrush(Color.FromArgb((int) (255*Transparency), BackColor));
+            g.FillRectangle(solidBrush, -Size.Width/2, -Size.Height/2, Size.Width, Size.Height);
+            g.DrawRectangle(pen, -Size.Width/2, -Size.Height/2, Size.Width, Size.Height);
             solidBrush.Dispose();
             pen.Dispose();
         }
@@ -306,32 +308,33 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         }
 
         /// <summary>
-        /// Draws a bitmap. 
+        ///     Draws a bitmap.
         /// </summary>
         /// <param name="g">The graphics to draw on.</param>
         public override void RenderObject(Graphics g)
         {
-            g.DrawImage(this.bitmap, -this.Size.Width/2, -this.Size.Height/2);
+            g.DrawImage(bitmap, -Size.Width/2, -Size.Height/2);
         }
     }
 
     public class Star : Shape
     {
         /// <summary>
-        /// Draws a star. Note that the star is drawn about the origin.
+        ///     Draws a star. Note that the star is drawn about the origin.
         /// </summary>
         /// <param name="g">The graphics to draw on.</param>
         public override void RenderObject(Graphics g)
         {
-            Pen pen = new Pen(this.ForeColor, this.LineThickness);
-            SolidBrush solidBrush = new SolidBrush(Color.FromArgb((int) (255*this.Transparency), this.BackColor));
-            Point[] points = new Point[11];
-            bool pointy = true;
+            var pen = new Pen(ForeColor, LineThickness);
+            var solidBrush = new SolidBrush(Color.FromArgb((int) (255*Transparency), BackColor));
+            var points = new Point[11];
+            var pointy = true;
             float a = 0;
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
-                float distance = pointy ? 1 : 0.6f;
-                points[i] = new Point((int) (distance*(this.Size.Width/2)*Math.Cos(a)), (int) (distance*(this.Size.Height/2)*Math.Sin(a)));
+                var distance = pointy ? 1 : 0.6f;
+                points[i] = new Point((int) (distance*(Size.Width/2)*Math.Cos(a)),
+                    (int) (distance*(Size.Height/2)*Math.Sin(a)));
                 a += (float) Math.PI*2/10;
                 pointy = !pointy;
             }
@@ -346,18 +349,18 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
     public class Pentagon : Shape
     {
         /// <summary>
-        /// Draws a pentagon. Note that the pentagon is drawn about the origin.
+        ///     Draws a pentagon. Note that the pentagon is drawn about the origin.
         /// </summary>
         /// <param name="g">The graphics to draw on.</param>
         public override void RenderObject(Graphics g)
         {
-            Pen pen = new Pen(this.ForeColor, this.LineThickness);
-            SolidBrush solidBrush = new SolidBrush(Color.FromArgb((int) (255*this.Transparency), this.BackColor));
-            Point[] points = new Point[6];
+            var pen = new Pen(ForeColor, LineThickness);
+            var solidBrush = new SolidBrush(Color.FromArgb((int) (255*Transparency), BackColor));
+            var points = new Point[6];
             float a = 0;
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
-                points[i] = new Point((int) ((this.Size.Width/2)*Math.Cos(a)), (int) ((this.Size.Height/2)*Math.Sin(a)));
+                points[i] = new Point((int) (Size.Width/2*Math.Cos(a)), (int) (Size.Height/2*Math.Sin(a)));
                 a += (float) Math.PI*2/5;
             }
             points[5] = points[0];
@@ -369,24 +372,24 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
     }
 
     /// <summary>
-    /// Manages a collection of shape objects
+    ///     Manages a collection of shape objects
     /// </summary>
     public class ShapeCollection : CollectionBase
     {
         public Shape this[int index]
         {
-            get { return (Shape) this.List[index]; }
-            set { this.List[index] = value; }
+            get { return (Shape) List[index]; }
+            set { List[index] = value; }
         }
 
         public void Add(Shape shape)
         {
-            this.List.Add(shape);
+            List.Add(shape);
         }
 
         public void Remove(Shape shape)
         {
-            this.List.Remove(shape);
+            List.Remove(shape);
         }
     }
 }

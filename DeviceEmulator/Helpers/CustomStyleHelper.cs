@@ -1,27 +1,38 @@
-// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
-
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceEmulator
 {
-    using System.Drawing;
-    using System.Drawing.Drawing2D;
-    using System.Windows.Forms;
-
     /// <summary>
-    /// Summary description for DrawCustomStyleHelper.
+    ///     Summary description for DrawCustomStyleHelper.
     /// </summary>
     public static class CustomStyleHelper
     {
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="g"></param>
         /// <param name="drawRectF"></param>
@@ -29,21 +40,25 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         /// <param name="orientation"></param>
         public static void DrawAquaPill(Graphics g, RectangleF drawRectF, Color drawColor, Orientation orientation)
         {
-            ColorBlend colorBlend = new ColorBlend();
+            var colorBlend = new ColorBlend();
 
-            Color color1 = CustomColorHelper.OpacityMix(Color.White, CustomColorHelper.SoftLightMix(drawColor, Color.Black, 100), 40);
-            Color color2 = CustomColorHelper.OpacityMix(
+            var color1 = CustomColorHelper.OpacityMix(Color.White,
+                CustomColorHelper.SoftLightMix(drawColor, Color.Black, 100), 40);
+            var color2 = CustomColorHelper.OpacityMix(
                 Color.White,
                 CustomColorHelper.SoftLightMix(drawColor, CustomColorHelper.CreateColorFromRGB(64, 64, 64), 100),
                 20);
-            Color color3 = CustomColorHelper.SoftLightMix(drawColor, CustomColorHelper.CreateColorFromRGB(128, 128, 128), 100);
-            Color color4 = CustomColorHelper.SoftLightMix(drawColor, CustomColorHelper.CreateColorFromRGB(192, 192, 192), 100);
-            Color color5 = CustomColorHelper.OverlayMix(CustomColorHelper.SoftLightMix(drawColor, Color.White, 100), Color.White, 75);
+            var color3 = CustomColorHelper.SoftLightMix(drawColor, CustomColorHelper.CreateColorFromRGB(128, 128, 128),
+                100);
+            var color4 = CustomColorHelper.SoftLightMix(drawColor, CustomColorHelper.CreateColorFromRGB(192, 192, 192),
+                100);
+            var color5 = CustomColorHelper.OverlayMix(CustomColorHelper.SoftLightMix(drawColor, Color.White, 100),
+                Color.White, 75);
 
             //			
             colorBlend.Colors = new[] {color1, color2, color3, color4, color5};
             colorBlend.Positions = new[] {0, 0.25f, 0.5f, 0.75f, 1};
-            LinearGradientBrush gradientBrush = orientation == Orientation.Horizontal
+            var gradientBrush = orientation == Orientation.Horizontal
                 ? new LinearGradientBrush(
                     new Point((int) drawRectF.Left, (int) drawRectF.Top - 1),
                     new Point((int) drawRectF.Left, (int) drawRectF.Top + (int) drawRectF.Height + 1),
@@ -77,26 +92,26 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="g"></param>
         /// <param name="drawRectF"></param>
         /// <param name="drawColor"></param>
         /// <param name="orientation"></param>
-        public static void DrawAquaPillSingleLayer(Graphics g, RectangleF drawRectF, Color drawColor, Orientation orientation, BrushStyle brushStyle)
+        public static void DrawAquaPillSingleLayer(Graphics g, RectangleF drawRectF, Color drawColor,
+            Orientation orientation, BrushStyle brushStyle)
         {
             if (brushStyle == BrushStyle.LinearGradient)
             {
-                ColorBlend colorBlend = new ColorBlend();
-                Color color1 = drawColor;
-                Color color2 = ControlPaint.Light(color1);
-                Color color3 = ControlPaint.Light(color2);
-                Color color4 = ControlPaint.Light(color3);
+                var colorBlend = new ColorBlend();
+                var color1 = drawColor;
+                var color2 = ControlPaint.Light(color1);
+                var color3 = ControlPaint.Light(color2);
+                var color4 = ControlPaint.Light(color3);
 
                 colorBlend.Colors = new[] {color1, color2, color3, color4};
                 colorBlend.Positions = new[] {0, 0.25f, 0.65f, 1};
 
-                LinearGradientBrush gradientBrush = orientation == Orientation.Horizontal
+                var gradientBrush = orientation == Orientation.Horizontal
                     ? new LinearGradientBrush(
                         new Point((int) drawRectF.Left, (int) drawRectF.Top),
                         new Point(
@@ -122,7 +137,6 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="b"></param>
         /// <param name="rect"></param>
@@ -133,10 +147,11 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
             {
                 g.SmoothingMode = SmoothingMode.HighQuality;
                 g.FillEllipse(b, new RectangleF(rect.Left, rect.Top, rect.Height, rect.Height));
-                g.FillEllipse(b, new RectangleF(rect.Left + rect.Width - rect.Height, rect.Top, rect.Height, rect.Height));
+                g.FillEllipse(b,
+                    new RectangleF(rect.Left + rect.Width - rect.Height, rect.Top, rect.Height, rect.Height));
 
-                float w = rect.Width - rect.Height;
-                float l = rect.Left + ((rect.Height)/2);
+                var w = rect.Width - rect.Height;
+                var l = rect.Left + rect.Height/2;
                 g.FillRectangle(b, new RectangleF(l, rect.Top, w, rect.Height));
                 g.SmoothingMode = SmoothingMode.Default;
             }
@@ -146,8 +161,8 @@ namespace Microsoft.AzureCat.Samples.DeviceEmulator
                 g.FillEllipse(b, new RectangleF(rect.Left, rect.Top, rect.Width, rect.Width));
                 g.FillEllipse(b, new RectangleF(rect.Left, rect.Top + rect.Height - rect.Width, rect.Width, rect.Width));
 
-                float t = rect.Top + (rect.Width/2);
-                float h = rect.Height - rect.Width;
+                var t = rect.Top + rect.Width/2;
+                var h = rect.Height - rect.Width;
                 g.FillRectangle(b, new RectangleF(rect.Left, t, rect.Width, h));
                 g.SmoothingMode = SmoothingMode.Default;
             }

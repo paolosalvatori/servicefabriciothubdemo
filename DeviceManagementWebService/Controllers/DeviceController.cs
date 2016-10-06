@@ -1,31 +1,48 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directices
 
+#endregion
 
+#region Using Directives
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web.Http;
+using Microsoft.AzureCat.Samples.DeviceActorService.Interfaces;
+using Microsoft.AzureCat.Samples.PayloadEntities;
+using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Client;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using System.Web.Http;
-    using Microsoft.AzureCat.Samples.DeviceActorService.Interfaces;
-    using Microsoft.AzureCat.Samples.PayloadEntities;
-    using Microsoft.ServiceFabric.Actors;
-    using Microsoft.ServiceFabric.Actors.Client;
-
     public class DeviceController : ApiController
     {
         #region Private Static Fields
 
-        private static readonly Dictionary<long, IDeviceActor> actorProxyDictionary = new Dictionary<long, IDeviceActor>();
+        private static readonly Dictionary<long, IDeviceActor> actorProxyDictionary =
+            new Dictionary<long, IDeviceActor>();
 
         #endregion
 
@@ -36,9 +53,7 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
             lock (actorProxyDictionary)
             {
                 if (actorProxyDictionary.ContainsKey(deviceId))
-                {
                     return actorProxyDictionary[deviceId];
-                }
                 actorProxyDictionary[deviceId] = ActorProxy.Create<IDeviceActor>(
                     new ActorId($"device{deviceId}"),
                     new Uri(OwinCommunicationListener.DeviceActorServiceUri));
@@ -55,21 +70,15 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         {
             try
             {
-                IDeviceActor proxy = this.GetActorProxy(id);
+                var proxy = GetActorProxy(id);
                 if (proxy != null)
-                {
                     return await proxy.GetData();
-                }
             }
             catch (AggregateException ex)
             {
                 if (ex.InnerExceptions?.Count > 0)
-                {
-                    foreach (Exception exception in ex.InnerExceptions)
-                    {
+                    foreach (var exception in ex.InnerExceptions)
                         ServiceEventSource.Current.Message(exception.Message);
-                    }
-                }
             }
             catch (Exception ex)
             {
@@ -84,31 +93,23 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         {
             try
             {
-                IList<long> enumerable = ids as IList<long> ?? ids.ToList();
-                if (ids == null || !enumerable.Any())
-                {
+                var enumerable = ids as IList<long> ?? ids.ToList();
+                if ((ids == null) || !enumerable.Any())
                     return null;
-                }
-                List<Device> deviceList = new List<Device>();
-                foreach (long id in enumerable)
+                var deviceList = new List<Device>();
+                foreach (var id in enumerable)
                 {
-                    IDeviceActor proxy = this.GetActorProxy(id);
+                    var proxy = GetActorProxy(id);
                     if (proxy != null)
-                    {
                         deviceList.Add(await proxy.GetData());
-                    }
                 }
                 return deviceList;
             }
             catch (AggregateException ex)
             {
                 if (ex.InnerExceptions?.Count > 0)
-                {
-                    foreach (Exception exception in ex.InnerExceptions)
-                    {
+                    foreach (var exception in ex.InnerExceptions)
                         ServiceEventSource.Current.Message(exception.Message);
-                    }
-                }
             }
             catch (Exception ex)
             {
@@ -122,21 +123,15 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         {
             try
             {
-                IDeviceActor proxy = this.GetActorProxy(device.DeviceId);
+                var proxy = GetActorProxy(device.DeviceId);
                 if (proxy != null)
-                {
                     await proxy.SetData(device);
-                }
             }
             catch (AggregateException ex)
             {
                 if (ex.InnerExceptions?.Count > 0)
-                {
-                    foreach (Exception exception in ex.InnerExceptions)
-                    {
+                    foreach (var exception in ex.InnerExceptions)
                         ServiceEventSource.Current.Message(exception.Message);
-                    }
-                }
             }
             catch (Exception ex)
             {
@@ -150,29 +145,21 @@ namespace Microsoft.AzureCat.Samples.DeviceManagementWebService
         {
             try
             {
-                IList<Device> enumerable = devices as IList<Device> ?? devices.ToList();
-                if (devices == null || !enumerable.Any())
-                {
+                var enumerable = devices as IList<Device> ?? devices.ToList();
+                if ((devices == null) || !enumerable.Any())
                     return;
-                }
-                foreach (Device device in enumerable)
+                foreach (var device in enumerable)
                 {
-                    IDeviceActor proxy = this.GetActorProxy(device.DeviceId);
+                    var proxy = GetActorProxy(device.DeviceId);
                     if (proxy != null)
-                    {
                         await proxy.SetData(device);
-                    }
                 }
             }
             catch (AggregateException ex)
             {
                 if (ex.InnerExceptions?.Count > 0)
-                {
-                    foreach (Exception exception in ex.InnerExceptions)
-                    {
+                    foreach (var exception in ex.InnerExceptions)
                         ServiceEventSource.Current.Message(exception.Message);
-                    }
-                }
             }
             catch (Exception ex)
             {

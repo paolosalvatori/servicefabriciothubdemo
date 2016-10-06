@@ -1,24 +1,40 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using System.Diagnostics.Tracing;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Microsoft.AzureCat.Samples.PayloadEntities;
+using Microsoft.ServiceFabric.Actors.Runtime;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.DeviceActorService
 {
-    using System;
-    using System.Diagnostics.Tracing;
-    using System.IO;
-    using System.Runtime.CompilerServices;
-    using System.Threading.Tasks;
-    using Microsoft.AzureCat.Samples.PayloadEntities;
-    using Microsoft.ServiceFabric.Actors.Runtime;
-
     [EventSource(Name = "IoTDemo-DeviceActorService")]
     public sealed class ActorEventSource : EventSource
     {
@@ -33,10 +49,8 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
         private static string GetClassFromFilePath(string sourceFilePath)
         {
             if (string.IsNullOrWhiteSpace(sourceFilePath))
-            {
                 return null;
-            }
-            FileInfo file = new FileInfo(sourceFilePath);
+            var file = new FileInfo(sourceFilePath);
             return Path.GetFileNameWithoutExtension(file.Name);
         }
 
@@ -63,22 +77,19 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
         [Event(1, Level = EventLevel.Informational, Message = "{0}")]
         public void Message(string message, [CallerFilePath] string source = "", [CallerMemberName] string method = "")
         {
-            if (!this.IsEnabled())
-            {
+            if (!IsEnabled())
                 return;
-            }
-            this.WriteEvent(1, $"[{GetClassFromFilePath(source) ?? "UNKNOWN"}::{method ?? "UNKNOWN"}] {message}");
+            WriteEvent(1, $"[{GetClassFromFilePath(source) ?? "UNKNOWN"}::{method ?? "UNKNOWN"}] {message}");
         }
 
         [NonEvent]
-        public void ActorMessage(Actor actor, string message, [CallerFilePath] string source = "", [CallerMemberName] string method = "", params object[] args)
+        public void ActorMessage(Actor actor, string message, [CallerFilePath] string source = "",
+            [CallerMemberName] string method = "", params object[] args)
         {
-            if (!this.IsEnabled())
-            {
+            if (!IsEnabled())
                 return;
-            }
-            string finalMessage = string.Format(message, args);
-            this.ActorMessage(
+            var finalMessage = string.Format(message, args);
+            ActorMessage(
                 actor.GetType().ToString(),
                 actor.Id.ToString(),
                 actor.ActorService.Context.CodePackageActivationContext.ApplicationTypeName,
@@ -94,29 +105,26 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
         }
 
         [NonEvent]
-        public void ActorHostInitializationFailed(Exception e, [CallerFilePath] string source = "", [CallerMemberName] string method = "")
+        public void ActorHostInitializationFailed(Exception e, [CallerFilePath] string source = "",
+            [CallerMemberName] string method = "")
         {
-            if (this.IsEnabled())
-            {
-                this.ActorHostInitializationFailed(e.ToString(), GetClassFromFilePath(source) ?? "UNKNOWN", method ?? "UNKNOWN");
-            }
+            if (IsEnabled())
+                ActorHostInitializationFailed(e.ToString(), GetClassFromFilePath(source) ?? "UNKNOWN",
+                    method ?? "UNKNOWN");
         }
 
         [NonEvent]
         public void Error(Exception e, [CallerFilePath] string source = "", [CallerMemberName] string method = "")
         {
-            if (this.IsEnabled())
-            {
-                this.Error($"[{GetClassFromFilePath(source) ?? "UNKNOWN"}::{method ?? "UNKNOWN"}] {e}");
-            }
+            if (IsEnabled())
+                Error($"[{GetClassFromFilePath(source) ?? "UNKNOWN"}::{method ?? "UNKNOWN"}] {e}");
         }
 
         [NonEvent]
         public void Telemetry(Device device, Payload payload)
         {
-            if (device != null && payload != null && this.IsEnabled())
-            {
-                this.Telemetry(
+            if ((device != null) && (payload != null) && IsEnabled())
+                Telemetry(
                     device.DeviceId,
                     device.Name,
                     device.City,
@@ -129,15 +137,13 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
                     payload.Value,
                     payload.Status,
                     payload.Timestamp);
-            }
         }
 
         [NonEvent]
         public void Alert(Device device, Payload payload)
         {
-            if (device != null && payload != null && this.IsEnabled())
-            {
-                this.Alert(
+            if ((device != null) && (payload != null) && IsEnabled())
+                Alert(
                     device.DeviceId,
                     device.Name,
                     device.City,
@@ -150,15 +156,13 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
                     payload.Value,
                     payload.Status,
                     payload.Timestamp);
-            }
         }
 
         [NonEvent]
         public void Metadata(Device device)
         {
-            if (device != null && this.IsEnabled())
-            {
-                this.Metadata(
+            if ((device != null) && IsEnabled())
+                Metadata(
                     device.DeviceId,
                     device.Name,
                     device.City,
@@ -168,7 +172,6 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
                     device.Type,
                     device.MinThreshold,
                     device.MaxThreshold);
-            }
         }
 
         #endregion
@@ -190,7 +193,7 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
             string method,
             string message)
         {
-            this.WriteEvent(
+            WriteEvent(
                 2,
                 actorType,
                 actorId,
@@ -209,13 +212,13 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
         [Event(3, Level = EventLevel.Error, Message = "Actor host initialization failed: {0}")]
         private void ActorHostInitializationFailed(string exception, string source, string method)
         {
-            this.WriteEvent(3, exception, source, method);
+            WriteEvent(3, exception, source, method);
         }
 
         [Event(4, Level = EventLevel.Error, Message = "An error occurred: {0}")]
         private void Error(string exception)
         {
-            this.WriteEvent(4, exception);
+            WriteEvent(4, exception);
         }
 
         [Event(5, Level = EventLevel.Informational, Message = "[Telemetry] Id =[{0}] Value=[{9}] Timestamp=[{11}]")]
@@ -233,7 +236,7 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
             string status,
             DateTime timestamp)
         {
-            this.WriteEvent(
+            WriteEvent(
                 5,
                 deviceId,
                 name,
@@ -264,7 +267,7 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
             string status,
             DateTime timestamp)
         {
-            this.WriteEvent(
+            WriteEvent(
                 6,
                 deviceId,
                 name,
@@ -281,8 +284,9 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
         }
 
         [Event(7, Level = EventLevel.Informational,
-            Message = "[Metadata] Id =[{0}] Name=[{1}] City=[{2}] Country=[{3}] Manufacturer=[{4}] Model=[{5}] Type=[{6}] MinThreshold=[{7}] MaxThreshold=[{8}]"
-            )]
+             Message =
+                 "[Metadata] Id =[{0}] Name=[{1}] City=[{2}] Country=[{3}] Manufacturer=[{4}] Model=[{5}] Type=[{6}] MinThreshold=[{7}] MaxThreshold=[{8}]"
+         )]
         private void Metadata(
             long deviceId,
             string name,
@@ -294,7 +298,7 @@ namespace Microsoft.AzureCat.Samples.DeviceActorService
             int minThreshold,
             int maxThreshold)
         {
-            this.WriteEvent(
+            WriteEvent(
                 7,
                 deviceId,
                 name,

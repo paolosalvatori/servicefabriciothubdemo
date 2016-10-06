@@ -1,20 +1,36 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
+﻿#region Copyright
+
+// //=======================================================================================
+// // Microsoft Azure Customer Advisory Team  
+// //
+// // This sample is supplemental to the technical guidance published on the community
+// // blog at http://blogs.msdn.com/b/paolos/. 
+// // 
+// // Author: Paolo Salvatori
+// //=======================================================================================
+// // Copyright © 2016 Microsoft Corporation. All rights reserved.
+// // 
+// // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER 
+// // EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
+// // MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. YOU BEAR THE RISK OF USING IT.
+// //=======================================================================================
+
+#endregion
 
 #region Using Directives
 
+#endregion
 
+#region Using Directives
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 #endregion
 
 namespace Microsoft.AzureCat.Samples.AlertClient
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-
     public class SortableBindingList<T> : BindingList<T>
     {
         private readonly Dictionary<Type, PropertyComparer<T>> comparers;
@@ -25,13 +41,13 @@ namespace Microsoft.AzureCat.Samples.AlertClient
         public SortableBindingList()
             : base(new List<T>())
         {
-            this.comparers = new Dictionary<Type, PropertyComparer<T>>();
+            comparers = new Dictionary<Type, PropertyComparer<T>>();
         }
 
         public SortableBindingList(IEnumerable<T> enumeration)
             : base(new List<T>(enumeration))
         {
-            this.comparers = new Dictionary<Type, PropertyComparer<T>>();
+            comparers = new Dictionary<Type, PropertyComparer<T>>();
         }
 
         protected override bool SupportsSortingCore
@@ -41,17 +57,17 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         protected override bool IsSortedCore
         {
-            get { return this.isSorted; }
+            get { return isSorted; }
         }
 
         protected override PropertyDescriptor SortPropertyCore
         {
-            get { return this.propertyDescriptor; }
+            get { return propertyDescriptor; }
         }
 
         protected override ListSortDirection SortDirectionCore
         {
-            get { return this.listSortDirection; }
+            get { return listSortDirection; }
         }
 
         protected override bool SupportsSearchingCore
@@ -61,46 +77,44 @@ namespace Microsoft.AzureCat.Samples.AlertClient
 
         protected override void ApplySortCore(PropertyDescriptor property, ListSortDirection direction)
         {
-            List<T> itemsList = (List<T>) this.Items;
+            var itemsList = (List<T>) Items;
 
-            Type propertyType = property.PropertyType;
+            var propertyType = property.PropertyType;
             PropertyComparer<T> comparer;
-            if (!this.comparers.TryGetValue(propertyType, out comparer))
+            if (!comparers.TryGetValue(propertyType, out comparer))
             {
                 comparer = new PropertyComparer<T>(property, direction);
-                this.comparers.Add(propertyType, comparer);
+                comparers.Add(propertyType, comparer);
             }
 
             comparer.SetPropertyAndDirection(property, direction);
             itemsList.Sort(comparer);
 
-            this.propertyDescriptor = property;
-            this.listSortDirection = direction;
-            this.isSorted = true;
+            propertyDescriptor = property;
+            listSortDirection = direction;
+            isSorted = true;
 
-            this.OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
+            OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
         }
 
         protected override void RemoveSortCore()
         {
-            this.isSorted = false;
-            this.propertyDescriptor = base.SortPropertyCore;
-            this.listSortDirection = base.SortDirectionCore;
+            isSorted = false;
+            propertyDescriptor = base.SortPropertyCore;
+            listSortDirection = base.SortDirectionCore;
 
-            this.OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
+            OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
         }
 
         protected override int FindCore(PropertyDescriptor property, object key)
         {
-            int count = this.Count;
-            for (int i = 0; i < count; ++i)
+            var count = Count;
+            for (var i = 0; i < count; ++i)
             {
-                T element = this[i];
-                object value = property.GetValue(element);
-                if (value != null && value.Equals(key))
-                {
+                var element = this[i];
+                var value = property.GetValue(element);
+                if ((value != null) && value.Equals(key))
                     return i;
-                }
             }
             return -1;
         }
